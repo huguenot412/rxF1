@@ -2,5 +2,5 @@ export enum DataSets {
   Drivers = 'drivers',
   Results = 'results',
   Qualifying = 'qualifying',
-  Standings = 'standings',
+  Standings = 'driverStandings',
 }

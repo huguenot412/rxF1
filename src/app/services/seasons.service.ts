@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
@@ -14,7 +15,8 @@ import { DataSets } from '../models/data-sets';
 @Injectable()
 export class SeasonsService {
   private _http = inject(HttpClient);
-  private _season$ = new BehaviorSubject('2018');
+  private _route = inject(ActivatedRoute);
+  private _season$ = new BehaviorSubject(this._route.snapshot.params['year']);
   private _limit$ = new BehaviorSubject(10);
   private _offset$ = new BehaviorSubject(0);
   public limit$ = this._limit$.asObservable();

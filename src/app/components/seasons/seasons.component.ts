@@ -9,11 +9,22 @@ import { SeasonsService } from 'src/app/services/seasons.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { map, Observable } from 'rxjs';
 import { DataSets } from 'src/app/models/data-sets';
+import { DriversComponent } from '../drivers/drivers.component';
+import { ResultsComponent } from '../results/results.component';
+import { QualifyingComponent } from '../qualifying/qualifying.component';
+import { StandingsComponent } from '../standings/standings.component';
 
 @Component({
   selector: 'app-seasons',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    DriversComponent,
+    ResultsComponent,
+    QualifyingComponent,
+    StandingsComponent,
+  ],
   providers: [SeasonsService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -24,25 +35,39 @@ import { DataSets } from 'src/app/models/data-sets';
       <li><a [routerLink]="['/seasons/2021']">2021</a></li>
       <li><a [routerLink]="['/seasons/2022']">2022</a></li>
     </ul>
-    <h1>{{ season$ | async }}</h1>
-    <ul>
-      <li><a [routerLink]="['drivers']">Drivers</a></li>
-      <li><a [routerLink]="['results']">Race Results</a></li>
-      <li><a [routerLink]="['qualifying']">Qualifying Results</a></li>
-      <li><a [routerLink]="['standings']">Driver Standings</a></li>
-    </ul>
-    <router-outlet></router-outlet>
+    <ng-container *ngIf="season$ | async as season; else seasonsEmptyState">
+      <h1>{{ season }}</h1>
+      <ul >
+        <li><a [routerLink]="['/seasons', season, dataSets.Drivers]">Drivers</a></li>
+        <li><a [routerLink]="['/seasons', season, dataSets.Results]">Race Results</a></li>
+        <li><a [routerLink]="['/seasons', season, dataSets.Qualifying]">Qualifying Results</a></li>
+        <li><a [routerLink]="['/seasons', season, dataSets.Standings]">Driver Standings</a></li>
+      </ul>
+    </ng-container>
+    <ng-template #seasonsEmptyState>
+      <p>Choose a season</p>
+    </ng-template>
+    <ng-container *ngIf="dataSet$ | async as dataSet; else dataSetEmptyState">
+      <f1-drivers *ngIf="dataSet === dataSets.Drivers"/>
+      <f1-results *ngIf="dataSet === dataSets.Results"/>
+      <f1-qualifying *ngIf="dataSet === dataSets.Qualifying"/>
+      <f1-standings *ngIf="dataSet === dataSets.Standings"/>
+    </ng-container>
+    <ng-template #dataSetEmptyState>
+      <p>Choose a category</p>
+    </ng-template>
   `,
   styles: [],
 })
 export class SeasonsComponent implements OnInit {
   private _seasonsService = inject(SeasonsService);
-  private _route = inject(ActivatedRoute);
+  public route = inject(ActivatedRoute);
   public seasonData$!: Observable<any>;
-  public season$!: Observable<string | null>;
+  public season$ = this.route.params.pipe(map((params) => params['season']));
+  public dataSet$ = this.route.params.pipe(map((params) => params['dataSet']));
+  public dataSets = DataSets;
 
   ngOnInit(): void {
-    this.season$ = this._route.params.pipe(map((params) => params['year']));
-    this.seasonData$ = this._seasonsService.getSeasonData(DataSets.Results);
+    this.season$ = this.route.params.pipe(map((params) => params['year']));
   }
 }

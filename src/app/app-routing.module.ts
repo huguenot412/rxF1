@@ -6,6 +6,7 @@ import { QualifyingComponent } from './components/qualifying/qualifying.componen
 import { ResultsComponent } from './components/results/results.component';
 import { SeasonsComponent } from './components/seasons/seasons.component';
 import { StandingsComponent } from './components/standings/standings.component';
+import { seasonsResolver } from './resolvers/seasons-resolver';
 
 const routes: Routes = [
   { path: '', component: SeasonsComponent },
@@ -13,12 +14,11 @@ const routes: Routes = [
   {
     path: 'seasons/:year',
     component: SeasonsComponent,
-    children: [
-      { path: 'drivers', component: DriversComponent },
-      { path: 'results', component: ResultsComponent },
-      { path: 'qualifying', component: QualifyingComponent },
-      { path: 'standings', component: StandingsComponent },
-    ],
+  },
+  {
+    path: 'seasons/:year/:dataSet',
+    component: SeasonsComponent,
+    resolve: { dataSet: seasonsResolver },
   },
   { path: '**', component: PageNotFoundComponent },
 ];

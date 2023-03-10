@@ -12,24 +12,67 @@ import {
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { DataSets } from '../models/data-sets';
 
-@Injectable()
+const INITIAL_STATE = {
+  season2018: {
+    drivers: {},
+    results: {},
+    qualifying: {},
+    standings: {},
+  },
+  season2019: {
+    drivers: {},
+    results: {},
+    qualifying: {},
+    standings: {},
+  },
+  season2020: {
+    drivers: {},
+    results: {},
+    qualifying: {},
+    standings: {},
+  },
+  season2021: {
+    drivers: {},
+    results: {},
+    qualifying: {},
+    standings: {},
+  },
+  season2022: {
+    drivers: {},
+    results: {},
+    qualifying: {},
+    standings: {},
+  },
+};
+
+@Injectable({
+  providedIn: 'root',
+})
 export class SeasonsService {
   private _http = inject(HttpClient);
   private _route = inject(ActivatedRoute);
-  private _season$ = new BehaviorSubject(this._route.snapshot.params['year']);
+  private _season$ = this._route.params.pipe(map((params) => params['year']));
   private _limit$ = new BehaviorSubject(10);
   private _offset$ = new BehaviorSubject(0);
+  private _page$ = new BehaviorSubject(1);
+  private _seasonsState$ = new BehaviorSubject(INITIAL_STATE);
   public limit$ = this._limit$.asObservable();
   public offset$ = this._offset$.asObservable();
 
-  public getSeasonData(dataSet: DataSets) {
-    return combineLatest([this._season$, this._limit$, this._offset$]).pipe(
-      switchMap(([season, limit, offset]) => {
-        return this._http.get(
-          `${ERGAST_API_BASE}/${SERIES}/${season}/${dataSet}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
-        );
-      })
-    );
+  public getSeasonData() {
+    // return combineLatest([this._season$, this._limit$, this._offset$]).pipe(
+    //   switchMap(([season, limit, offset]) => {
+    //     return this._http.get(
+    //       `${ERGAST_API_BASE}/${SERIES}/${season}/${this._route.snapshot.params['dataSet']}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
+    //     );
+    //   })
+    // );
+    return {
+      drivers: 'drivers',
+      results: 'results',
+      qualifying: 'qualifying',
+      standings: 'standings',
+    };
   }
 }
 

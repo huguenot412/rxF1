@@ -52,6 +52,9 @@ export class SeasonsService {
   private _http = inject(HttpClient);
   private _route = inject(ActivatedRoute);
   private _season$ = this._route.params.pipe(map((params) => params['year']));
+  private _dataSet$ = this._route.params.pipe(
+    map((params) => params['dataSet'])
+  );
   private _limit$ = new BehaviorSubject(10);
   private _offset$ = new BehaviorSubject(0);
   private _page$ = new BehaviorSubject(1);
@@ -60,19 +63,24 @@ export class SeasonsService {
   public offset$ = this._offset$.asObservable();
 
   public getSeasonData() {
-    // return combineLatest([this._season$, this._limit$, this._offset$]).pipe(
-    //   switchMap(([season, limit, offset]) => {
-    //     return this._http.get(
-    //       `${ERGAST_API_BASE}/${SERIES}/${season}/${this._route.snapshot.params['dataSet']}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
-    //     );
-    //   })
-    // );
-    return {
-      drivers: 'drivers',
-      results: 'results',
-      qualifying: 'qualifying',
-      standings: 'standings',
-    };
+    return combineLatest([
+      this._season$,
+      this._dataSet$,
+      this._limit$,
+      this._offset$,
+    ]).pipe(
+      switchMap(([season, dataSet, limit, offset]) => {
+        return this._http.get(
+          `${ERGAST_API_BASE}/${SERIES}/${season}/${dataSet}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
+        );
+      })
+    );
+    // return {
+    //   drivers: 'drivers',
+    //   results: 'results',
+    //   qualifying: 'qualifying',
+    //   standings: 'standings',
+    // };
   }
 }
 

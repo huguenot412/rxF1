@@ -2,6 +2,6 @@ export interface Season {
   drivers: any;
   results: any;
   qualifying: any;
-  standings: any;
+  driverStandings: any;
   year: string;
 }

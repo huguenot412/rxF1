@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ComponentStore } from '@ngrx/component-store';
 import { map } from 'rxjs';
+import { DataSets } from '../enums/data-sets';
 import { Season } from '../models/season';
 
 export interface SeasonsState {
@@ -17,35 +18,35 @@ const defaultState: SeasonsState = {
       drivers: {},
       results: {},
       qualifying: {},
-      standings: {},
+      driverStandings: {},
       year: '2018',
     },
     {
       drivers: {},
       results: {},
       qualifying: {},
-      standings: {},
+      driverStandings: {},
       year: '2019',
     },
     {
       drivers: {},
       results: {},
       qualifying: {},
-      standings: {},
+      driverStandings: {},
       year: '2020',
     },
     {
       drivers: {},
       results: {},
       qualifying: {},
-      standings: {},
+      driverStandings: {},
       year: '2021',
     },
     {
       drivers: {},
       results: {},
       qualifying: {},
-      standings: {},
+      driverStandings: {},
       year: '2022',
     },
   ],
@@ -71,19 +72,19 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
   public readonly selectedSeasonDrivers$ = this.select(
     this.selectedSeason$,
-    (season) => season?.drivers
+    (season) => (season ? season[DataSets.Drivers] : null)
   );
   public readonly selectedSeasonResults$ = this.select(
     this.selectedSeason$,
-    (season) => season?.results
+    (season) => (season ? season[DataSets.Results] : null)
   );
   public readonly selectedSeasonQualifying$ = this.select(
     this.selectedSeason$,
-    (season) => season?.qualifying
+    (season) => (season ? season[DataSets.Qualifying] : null)
   );
   public readonly selectedSeasonStandings$ = this.select(
     this.selectedSeason$,
-    (season) => season?.standings
+    (season) => (season ? season[DataSets.Standings] : null)
   );
   public readonly limit$ = this.select(({ limit }) => limit);
   public readonly offset$ = this.select(({ offset }) => offset);
@@ -93,3 +94,6 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     super(defaultState);
   }
 }
+
+// TODO: Determine how best to fetch dataSet, update it in Store and pass it to components.
+// Resolver? Store Effects?

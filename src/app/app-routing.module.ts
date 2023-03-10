@@ -18,7 +18,6 @@ const routes: Routes = [
   {
     path: 'seasons/:year/:dataSet',
     component: SeasonsComponent,
-    resolve: { dataSet: seasonsResolver },
   },
   { path: '**', component: PageNotFoundComponent },
 ];

@@ -58,33 +58,22 @@ const defaultState: SeasonsState = {
 @Injectable()
 export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _route = inject(ActivatedRoute);
-  public readonly season$ = this._route.params.pipe(
+  private readonly _season$ = this._route.params.pipe(
     map((params) => params['season'])
   );
-  public readonly dataSet$ = this._route.params.pipe(
+  private readonly _dataSet$ = this._route.params.pipe(
     map((params) => params['dataSet'])
   );
   public readonly seasons$ = this.select(({ seasons }) => seasons);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
-    this.season$,
+    this._season$,
     (seasons, year) => seasons.find((season) => season.year === year)
   );
-  public readonly selectedSeasonDrivers$ = this.select(
+  public readonly selectedDataSet$ = this.select(
     this.selectedSeason$,
-    (season) => (season ? season[DataSets.Drivers] : null)
-  );
-  public readonly selectedSeasonResults$ = this.select(
-    this.selectedSeason$,
-    (season) => (season ? season[DataSets.Results] : null)
-  );
-  public readonly selectedSeasonQualifying$ = this.select(
-    this.selectedSeason$,
-    (season) => (season ? season[DataSets.Qualifying] : null)
-  );
-  public readonly selectedSeasonStandings$ = this.select(
-    this.selectedSeason$,
-    (season) => (season ? season[DataSets.Standings] : null)
+    this._dataSet$,
+    (season, dataSet: DataSets) => (season ? season[dataSet] : null)
   );
   public readonly limit$ = this.select(({ limit }) => limit);
   public readonly offset$ = this.select(({ offset }) => offset);
@@ -97,3 +86,11 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
 // TODO: Determine how best to fetch dataSet, update it in Store and pass it to components.
 // Resolver? Store Effects?
+
+// Pagination
+
+// Display data
+
+// Tests
+
+// Styling

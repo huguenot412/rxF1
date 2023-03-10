@@ -1,16 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  BehaviorSubject,
-  combineLatest,
-  forkJoin,
-  map,
-  Observable,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, map, switchMap } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
-import { DataSets } from '../enums/data-sets';
 
 const INITIAL_STATE = {
   season2018: {
@@ -57,8 +49,6 @@ export class SeasonsService {
   );
   private _limit$ = new BehaviorSubject(10);
   private _offset$ = new BehaviorSubject(0);
-  private _page$ = new BehaviorSubject(1);
-  private _seasonsState$ = new BehaviorSubject(INITIAL_STATE);
   public limit$ = this._limit$.asObservable();
   public offset$ = this._offset$.asObservable();
 

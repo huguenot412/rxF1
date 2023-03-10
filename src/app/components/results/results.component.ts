@@ -8,11 +8,11 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Race Results Data</h1>
-    <pre>{{ (resultsData | async | json) || 'Loading...' }}</pre>
+    <pre>{{ (dataSet | async | json) || 'Loading...' }}</pre>
   `,
   styles: [],
 })
 export class ResultsComponent {
   @Input()
-  public resultsData: any;
+  public dataSet: any;
 }

@@ -10,7 +10,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
-import { DataSets } from '../models/data-sets';
+import { DataSets } from '../enums/data-sets';
 
 const INITIAL_STATE = {
   season2018: {

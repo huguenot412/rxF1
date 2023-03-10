@@ -5,7 +5,7 @@ import {
   ResolveFn,
   RouterStateSnapshot,
 } from '@angular/router';
-import { DataSets } from '../models/data-sets';
+import { DataSets } from '../enums/data-sets';
 import { SeasonsService } from '../services/seasons.service';
 
 export const seasonsResolver: ResolveFn<any> = (

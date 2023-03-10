@@ -12,5 +12,5 @@ export const seasonsResolver: ResolveFn<any> = (
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
-  return inject(SeasonsService).getSeasonData();
+  // return inject(SeasonsService).getSeasonData();
 };

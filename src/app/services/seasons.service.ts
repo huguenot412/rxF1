@@ -4,39 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, combineLatest, map, switchMap } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 
-const INITIAL_STATE = {
-  season2018: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2019: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2020: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2021: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2022: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-};
-
 @Injectable({
   providedIn: 'root',
 })
@@ -47,30 +14,15 @@ export class SeasonsService {
   private _dataSet$ = this._route.params.pipe(
     map((params) => params['dataSet'])
   );
-  private _limit$ = new BehaviorSubject(10);
-  private _offset$ = new BehaviorSubject(0);
-  public limit$ = this._limit$.asObservable();
-  public offset$ = this._offset$.asObservable();
 
-  public getSeasonData() {
-    return combineLatest([
-      this._season$,
-      this._dataSet$,
-      this._limit$,
-      this._offset$,
-    ]).pipe(
-      switchMap(([season, dataSet, limit, offset]) => {
+  public getSeasonData(limit: number, offset: number) {
+    return combineLatest([this._season$, this._dataSet$]).pipe(
+      map(([season, dataSet]) => {
         return this._http.get(
           `${ERGAST_API_BASE}/${SERIES}/${season}/${dataSet}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
         );
       })
     );
-    // return {
-    //   drivers: 'drivers',
-    //   results: 'results',
-    //   qualifying: 'qualifying',
-    //   standings: 'standings',
-    // };
   }
 }
 

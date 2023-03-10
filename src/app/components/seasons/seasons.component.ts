@@ -41,7 +41,9 @@ import { CATEGORIES } from 'src/app/consts/categories';
       <h1>{{ season }}</h1>
       <ul >
         <li *ngFor="let category of categories | keyvalue">
-          <a [routerLink]="['/seasons', season, category.key]" (click)="getSeasonData()">{{ category.value }}</a>
+          <ng-container *ngIf="limit$ | async as limit">
+          <a *ngIf="offset$ | async as offset" [routerLink]="['/seasons', season, category.key]" (click)="getSeasonData(limit, offset)">{{ category.value }}</a>
+          </ng-container>
         </li>
       </ul>
     </ng-container>
@@ -67,11 +69,13 @@ export class SeasonsComponent {
   public season$ = this._route.params.pipe(map((params) => params['year']));
   public dataSet$ = this._route.params.pipe(map((params) => params['dataSet']));
   public page$ = this._seasonsStore.page$;
+  public limit$ = this._seasonsStore.limit$;
+  public offset$ = this._seasonsStore.offset$;
   public dataSets = DataSets;
   public seasonData$: any = null;
   public categories = CATEGORIES;
 
-  public getSeasonData(): void {
-    this.seasonData$ = this._seasonsService.getSeasonData();
+  public getSeasonData(limit: number, offset: number): void {
+    this.seasonData$ = this._seasonsService.getSeasonData(limit, offset);
   }
 }

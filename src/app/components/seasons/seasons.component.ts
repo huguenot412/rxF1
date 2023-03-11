@@ -16,6 +16,7 @@ import { StandingsComponent } from '../standings/standings.component';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { SeasonDetailsComponent } from '../season-details/season-details.component';
 import { CATEGORIES } from 'src/app/consts/categories';
+import { LetModule } from '@ngrx/component';
 
 @Component({
   selector: 'app-seasons',
@@ -28,6 +29,7 @@ import { CATEGORIES } from 'src/app/consts/categories';
     QualifyingComponent,
     StandingsComponent,
     SeasonDetailsComponent,
+    LetModule,
   ],
   providers: [SeasonsService, SeasonsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,18 +43,22 @@ import { CATEGORIES } from 'src/app/consts/categories';
       <h1>{{ season }}</h1>
       <ul >
         <li *ngFor="let category of categories | keyvalue">
-          <ng-container *ngIf="limit$ | async as limit">
-          <a *ngIf="offset$ | async as offset" [routerLink]="['/seasons', season, category.key]" (click)="getSeasonData(limit, offset)">{{ category.value }}</a>
-          </ng-container>
+          <a
+            *ngIf="dataSet$ | async as dataSet"
+            [routerLink]="['/seasons', season, category.key]"
+            (click)="getSeasonData(dataSet)">
+            {{ category.value }}
+          </a>
         </li>
       </ul>
     </ng-container>
     <ng-template #seasonsEmptyState>
       <p>Choose a season</p>
     </ng-template>
-    <ng-container *ngIf="dataSet$ | async as dataSet; else dataSetEmptyState">
-      <f1-season-details [dataSet]="seasonData$ | async"/>
-    </ng-container>
+    <f1-season-details
+      *ngrxLet="{ selectedData: selectedDataSet$, dataSet: dataSet$} as data"
+      [data]="data.selectedData"
+      [dataSet]="data.dataSet"/>
     <ng-template #dataSetEmptyState>
       <p>Choose a category</p>
     </ng-template>
@@ -61,7 +67,6 @@ import { CATEGORIES } from 'src/app/consts/categories';
 })
 export class SeasonsComponent {
   private _route = inject(ActivatedRoute);
-  private _seasonsService = inject(SeasonsService);
   private _seasonsStore = inject(SeasonsStore);
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
   public selectedDataSet$ = this._seasonsStore.selectedDataSet$;
@@ -75,7 +80,7 @@ export class SeasonsComponent {
   public seasonData$: any = null;
   public categories = CATEGORIES;
 
-  public getSeasonData(limit: number, offset: number): void {
-    this.seasonData$ = this._seasonsService.getSeasonData(limit, offset);
+  public getSeasonData(dataSet: DataSets): void {
+    this.seasonData$ = this._seasonsStore.getSeasonData(dataSet);
   }
 }

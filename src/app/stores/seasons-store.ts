@@ -75,7 +75,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _route = inject(ActivatedRoute);
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _season$ = this._route.params.pipe(
-    map((params) => params['season'])
+    map((params) => params['year'])
   );
   private readonly _dataSet$ = this._route.params.pipe(
     map((params) => params['dataSet'])
@@ -84,7 +84,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this._season$,
-    (seasons, year) => seasons.find((season) => season.year === year)
+    (seasons, year) => seasons.find((season) => season.year == year)
   );
   public readonly selectedDataSet$ = this.select(
     this.selectedSeason$,

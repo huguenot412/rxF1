@@ -9,12 +9,14 @@ import { CATEGORIES } from 'src/app/consts/categories';
   imports: [CommonModule],
   template: `
     <h1>{{ categoryName }}</h1>
-    <pre>{{ (dataSet | json) || 'Loading...' }}</pre>
+    <pre>{{ (data | json) || 'Loading...' }}</pre>
   `,
   styles: [],
 })
 export class SeasonDetailsComponent {
   @Input()
-  public dataSet: any = DataSets.Drivers;
+  public data: any = {};
+  @Input()
+  public dataSet: DataSets = DataSets.Drivers;
   public categoryName = CATEGORIES.get(this.dataSet);
 }

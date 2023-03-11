@@ -42,10 +42,10 @@ import { RouteParams } from 'src/app/enums/route-params';
     </ul>
     <ng-container *ngIf="season$ | async as season; else seasonsEmptyState">
       <h1>{{ season }}</h1>
-      <ul >
+      <ul>
         <li *ngFor="let category of categories | keyvalue">
           <a
-            *ngIf="dataSet$ | async as dataSet"
+            *ngrxLet="dataSet$ as dataSet"
             [routerLink]="['/seasons', season, category.key]"
             (click)="getSeasonData(dataSet)">
             {{ category.value }}
@@ -56,10 +56,12 @@ import { RouteParams } from 'src/app/enums/route-params';
     <ng-template #seasonsEmptyState>
       <p>Choose a season</p>
     </ng-template>
-    <f1-season-details
-      *ngrxLet="{ selectedData: selectedDataSet$, dataSet: dataSet$} as data"
-      [data]="data.selectedData"
-      [dataSet]="data.dataSet"/>
+    <ng-container *ngIf="dataSet$ | async as dataSet; else dataSetEmptyState">
+      <f1-season-details
+        *ngrxLet="selectedDataSet$ as selectedData"
+        [data]="selectedData"
+        [dataSet]="dataSet"/>
+    </ng-container>
     <ng-template #dataSetEmptyState>
       <p>Choose a category</p>
     </ng-template>

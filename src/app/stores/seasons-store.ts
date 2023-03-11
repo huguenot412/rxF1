@@ -11,6 +11,7 @@ import {
   withLatestFrom,
 } from 'rxjs';
 import { DataSets } from '../enums/data-sets';
+import { RouteParams } from '../enums/route-params';
 import { Season } from '../models/season';
 import { SeasonsService } from '../services/seasons.service';
 
@@ -101,8 +102,9 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
   public readonly updateSeason = this.updater(
     (state: SeasonsState, data: any) => {
-      const year: string = this._route.snapshot.params['year'];
-      const dataSet: DataSets = this._route.snapshot.params['dataSet'];
+      const year: string = this._route.snapshot.params[RouteParams.Year];
+      const dataSet: DataSets =
+        this._route.snapshot.params[RouteParams.DataSet];
       const newSeasons: Season[] = structuredClone(state.seasons);
       const newSeason = newSeasons.find((item: Season) => item.year === year);
       const newSeasonIndex = newSeasons.findIndex(

@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, combineLatest, map, switchMap } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
+import { RouteParams } from '../enums/route-params';
 
 @Injectable({
   providedIn: 'root',
@@ -10,9 +11,11 @@ import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 export class SeasonsService {
   private _http = inject(HttpClient);
   private _route = inject(ActivatedRoute);
-  private _season$ = this._route.params.pipe(map((params) => params['year']));
+  private _season$ = this._route.params.pipe(
+    map((params) => params[RouteParams.Year])
+  );
   private _dataSet$ = this._route.params.pipe(
-    map((params) => params['dataSet'])
+    map((params) => params[RouteParams.DataSet])
   );
 
   public getSeasonData(limit: number, offset: number) {

@@ -17,6 +17,7 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { SeasonDetailsComponent } from '../season-details/season-details.component';
 import { CATEGORIES } from 'src/app/consts/categories';
 import { LetModule } from '@ngrx/component';
+import { RouteParams } from 'src/app/enums/route-params';
 
 @Component({
   selector: 'app-seasons',
@@ -71,8 +72,12 @@ export class SeasonsComponent {
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
   public selectedDataSet$ = this._seasonsStore.selectedDataSet$;
   public seasons$ = this._seasonsStore.seasons$;
-  public season$ = this._route.params.pipe(map((params) => params['year']));
-  public dataSet$ = this._route.params.pipe(map((params) => params['dataSet']));
+  public season$ = this._route.params.pipe(
+    map((params) => params[RouteParams.Year])
+  );
+  public dataSet$ = this._route.params.pipe(
+    map((params) => params[RouteParams.DataSet])
+  );
   public page$ = this._seasonsStore.page$;
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;

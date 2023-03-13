@@ -60,6 +60,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.offset$,
     (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
+  public readonly paginationConfig$ = this.select(
+    this.page$,
+    this.limit$,
+    this.offset$,
+    (currentPage, limit, offset) => ({ currentPage, limit, offset })
+  );
 
   constructor() {
     super(defaultState);

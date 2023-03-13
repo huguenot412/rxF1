@@ -11,6 +11,7 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { SeasonDetailsComponent } from '../season-details/season-details.component';
 import { CATEGORIES } from 'src/app/consts/categories';
 import { LetModule } from '@ngrx/component';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-seasons',
@@ -23,6 +24,7 @@ import { LetModule } from '@ngrx/component';
     QualifyingComponent,
     StandingsComponent,
     SeasonDetailsComponent,
+    PaginationComponent,
     LetModule,
   ],
   providers: [SeasonsService, SeasonsStore],
@@ -50,6 +52,7 @@ import { LetModule } from '@ngrx/component';
       <p>Choose a season</p>
     </ng-template>
     <ng-container *ngIf="dataSet$ | async as dataSet">
+      <f1-pagination *ngrxLet="paginationConfig$ as config" [config]="config"/>
       <f1-season-details
         *ngrxLet="selectedDataSet$ as selectedData"
         [data]="selectedData"
@@ -69,11 +72,11 @@ export class SeasonsComponent {
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;
   public getDataConfig$ = this._seasonsStore.getDataConfig$;
+  public paginationConfig$ = this._seasonsStore.paginationConfig$;
   public dataSets = DataSets;
-  public seasonData$: any = null;
   public categories = CATEGORIES;
 
   public getSeasonData(): void {
-    this.seasonData$ = this._seasonsStore.getSeasonData(this.getDataConfig$);
+    this._seasonsStore.getSeasonData(this.getDataConfig$);
   }
 }

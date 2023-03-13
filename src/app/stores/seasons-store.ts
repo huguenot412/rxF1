@@ -50,9 +50,21 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.dataSet$,
     (season, dataSet: DataSets) => (season ? season[dataSet] : null)
   );
+  public readonly totalResults$ = this.select(
+    this.selectedDataSet$,
+    (data) => data.total || 0
+  );
   public readonly limit$ = this.select(({ limit }) => limit);
   public readonly offset$ = this.select(({ offset }) => offset);
-  public readonly page$ = this.select(({ page }) => page);
+  public readonly currentPage$ = this.select(({ page }) => page);
+  public readonly pagesCount$ = this.select(
+    this.totalResults$,
+    this.limit$,
+    (total, limit) => Math.ceil(total / limit)
+  );
+  public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
+    [...Array(pageCount).keys()].map((num) => num + 1)
+  );
   public readonly getDataConfig$ = this.select(
     this.year$,
     this.dataSet$,
@@ -61,10 +73,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
   public readonly paginationConfig$ = this.select(
-    this.page$,
+    this.currentPage$,
     this.limit$,
-    this.offset$,
-    (currentPage, limit, offset) => ({ currentPage, limit, offset })
+    this.totalResults$,
+    (currentPage, limit, total) => ({ currentPage, limit, total })
   );
 
   constructor() {
@@ -115,3 +127,5 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 // Tests
 
 // Styling
+
+// Route Guards

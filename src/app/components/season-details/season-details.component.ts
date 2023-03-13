@@ -9,7 +9,7 @@ import { CATEGORIES } from 'src/app/consts/categories';
   imports: [CommonModule],
   template: `
     <h1>{{ categoryName }}</h1>
-    <pre>{{ (data | json) || 'Loading...' }}</pre>
+    <pre>{{ (data.data | json) || 'Loading...' }}</pre>
   `,
   styles: [],
 })

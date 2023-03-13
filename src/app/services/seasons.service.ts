@@ -20,24 +20,25 @@ export class SeasonsService {
       )
       .pipe(
         map((data: any) => {
-          let results;
+          let results = {
+            data: {},
+            total: data.MRData.total,
+          };
 
           switch (dataSet) {
             case DataSets.Drivers:
-              results = data.MRData.DriverTable.Drivers;
+              results.data = data.MRData.DriverTable.Drivers;
               break;
             case DataSets.Standings:
-              results =
+              results.data =
                 data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
               break;
             case DataSets.Qualifying:
-              results = data.MRData.RaceTable.Races;
+              results.data = data.MRData.RaceTable.Races;
               break;
             case DataSets.Results:
-              results = data.MRData.RaceTable.Races;
+              results.data = data.MRData.RaceTable.Races;
               break;
-            default:
-              results = {};
           }
 
           return results;

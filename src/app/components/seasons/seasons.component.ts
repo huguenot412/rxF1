@@ -52,7 +52,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <p>Choose a season</p>
     </ng-template>
     <ng-container *ngIf="dataSet$ | async as dataSet">
-      <f1-pagination *ngrxLet="paginationConfig$ as config" [config]="config"/>
+      <f1-pagination/>
       <f1-season-details
         *ngrxLet="selectedDataSet$ as selectedData"
         [data]="selectedData"
@@ -68,7 +68,7 @@ export class SeasonsComponent {
   public seasons$ = this._seasonsStore.seasons$;
   public season$ = this._seasonsStore.year$;
   public dataSet$ = this._seasonsStore.dataSet$;
-  public page$ = this._seasonsStore.page$;
+  public page$ = this._seasonsStore.currentPage$;
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;
   public getDataConfig$ = this._seasonsStore.getDataConfig$;

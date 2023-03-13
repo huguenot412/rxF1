@@ -28,7 +28,6 @@ import { LetModule } from '@ngrx/component';
   providers: [SeasonsService, SeasonsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-  <pre>{{dataSet$ | async}}</pre>
     <ul>
       <li *ngFor="let season of seasons$ | async">
         <a [routerLink]="['/seasons/' + season.year, (dataSet$ | async) || '']">{{ season.year }}</a>

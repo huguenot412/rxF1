@@ -87,8 +87,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   readonly getSeasonData = this.effect(
-    (seasonsDataFetched$: Observable<GetSeasonsConfig>) => {
-      return seasonsDataFetched$.pipe(
+    (getDataConfig$: Observable<GetSeasonsConfig>) => {
+      return getDataConfig$.pipe(
         switchMap((config) =>
           this._seasonsService.getSeasonData(config).pipe(
             tapResponse(

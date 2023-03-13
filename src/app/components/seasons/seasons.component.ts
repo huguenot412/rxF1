@@ -30,41 +30,48 @@ import { PaginationComponent } from '../pagination/pagination.component';
   providers: [SeasonsService, SeasonsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul>
-      <li *ngFor="let season of seasons$ | async">
-        <a [routerLink]="['/seasons/' + season.year, (dataSet$ | async) || '']">{{ season.year }}</a>
-      </li>
-    </ul>
-    <ng-container *ngIf="season$ | async as season; else seasonsEmptyState">
-      <h1>{{ season }}</h1>
+
       <ul>
-        <li *ngFor="let category of categories | keyvalue">
-          <a
-            *ngrxLet="dataSet$ as dataSet"
-            [routerLink]="['/seasons', season, category.key]"
-            (click)="getSeasonData()">
-            {{ category.value }}
-          </a>
+        <li *ngFor="let season of seasons$ | async">
+          <a [routerLink]="['/seasons/' + season.year, (dataSet$ | async) || '']">{{ season.year }}</a>
         </li>
       </ul>
-    </ng-container>
-    <ng-template #seasonsEmptyState>
-      <p>Choose a season</p>
-    </ng-template>
-    <ng-container *ngIf="dataSet$ | async as dataSet">
-      <f1-pagination/>
-      <f1-season-details
-        *ngrxLet="selectedDataSet$ as selectedData"
-        [data]="selectedData"
-        [dataSet]="dataSet"/>
-    </ng-container>
+      <ng-container *ngIf="season$ | async as season; else seasonsEmptyState">
+        <h1>{{ season }}</h1>
+        <ul>
+          <li *ngFor="let category of categories | keyvalue">
+            <a
+              *ngrxLet="dataSet$ as dataSet"
+              [routerLink]="['/seasons', season, category.key]"
+              (click)="getSeasonData()">
+              {{ category.value }}
+            </a>
+          </li>
+        </ul>
+      </ng-container>
+      <ng-template #seasonsEmptyState>
+        <p>Choose a season</p>
+      </ng-template>
+      <ng-container *ngIf="dataSet$ | async as dataSet">
+        <f1-pagination/>
+        <f1-season-details/>
+      </ng-container>
+
+      <ng-container *ngrxLet="{
+        state: state$,
+        selectedSeason: selectedSeason$,
+        selectedDataSet: selectedDataSet$,
+        selectedData: selectedData$
+      }"></ng-container>
   `,
-  styles: [],
+  styles: [``],
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
+  public state$ = this._seasonsStore.everything$;
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
   public selectedDataSet$ = this._seasonsStore.selectedDataSet$;
+  public selectedData$ = this._seasonsStore.selectedData$;
   public seasons$ = this._seasonsStore.seasons$;
   public season$ = this._seasonsStore.year$;
   public dataSet$ = this._seasonsStore.dataSet$;
@@ -72,7 +79,6 @@ export class SeasonsComponent {
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;
   public getDataConfig$ = this._seasonsStore.getDataConfig$;
-  public paginationConfig$ = this._seasonsStore.paginationConfig$;
   public dataSets = DataSets;
   public categories = CATEGORIES;
 

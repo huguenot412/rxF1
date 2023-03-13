@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
-import { map, Observable, switchMap } from 'rxjs';
+import { map, Observable, switchMap, tap } from 'rxjs';
 import { SEASONS_INITIAL_STATE } from '../consts/seasons-initial-state';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
@@ -33,6 +33,9 @@ const defaultState: SeasonsState = {
 export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _route = inject(ActivatedRoute);
   private readonly _seasonsService = inject(SeasonsService);
+  public readonly everything$ = this.select((state) => state).pipe(
+    tap((state) => console.log(state))
+  );
   public readonly year$ = this._route.params.pipe(
     map((params) => params['year'])
   );
@@ -72,11 +75,42 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.offset$,
     (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
-  public readonly paginationConfig$ = this.select(
+  public readonly selectedData$ = this.select(
+    this.selectedDataSet$,
+    this.dataSet$,
+    (selectedDataSet, dataSet) => {
+      if (!selectedDataSet || !selectedDataSet.data) return [];
+
+      let results = [];
+
+      switch (dataSet) {
+        case DataSets.Drivers:
+          results = selectedDataSet.data;
+          break;
+        case DataSets.Standings:
+          results = selectedDataSet.data;
+          break;
+        case DataSets.Qualifying:
+          results = selectedDataSet.data;
+          break;
+        case DataSets.Results:
+          results = selectedDataSet.data[0].Results;
+          break;
+      }
+
+      return results;
+    }
+  );
+  public readonly dataToDisplay$ = this.select(
+    this.selectedData$,
     this.currentPage$,
     this.limit$,
-    this.totalResults$,
-    (currentPage, limit, total) => ({ currentPage, limit, total })
+    (data, currentPage, limit) => {
+      const range = currentPage * limit;
+      const sliceStart = range - limit;
+      const sliceEnd = sliceStart + limit;
+      return data.slice(sliceStart, sliceEnd);
+    }
   );
 
   constructor() {

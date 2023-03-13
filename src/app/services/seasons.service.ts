@@ -1,78 +1,48 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import {
-  BehaviorSubject,
-  combineLatest,
-  forkJoin,
-  map,
-  Observable,
-  switchMap,
-} from 'rxjs';
+import { map } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
-import { DataSets } from '../models/data-sets';
-
-const INITIAL_STATE = {
-  season2018: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2019: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2020: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2021: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-  season2022: {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    standings: {},
-  },
-};
+import { DataSets } from '../enums/data-sets';
+import { GetSeasonsConfig } from '../models/get-seasons-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SeasonsService {
   private _http = inject(HttpClient);
-  private _route = inject(ActivatedRoute);
-  private _season$ = this._route.params.pipe(map((params) => params['year']));
-  private _limit$ = new BehaviorSubject(10);
-  private _offset$ = new BehaviorSubject(0);
-  private _page$ = new BehaviorSubject(1);
-  private _seasonsState$ = new BehaviorSubject(INITIAL_STATE);
-  public limit$ = this._limit$.asObservable();
-  public offset$ = this._offset$.asObservable();
 
-  public getSeasonData() {
-    // return combineLatest([this._season$, this._limit$, this._offset$]).pipe(
-    //   switchMap(([season, limit, offset]) => {
-    //     return this._http.get(
-    //       `${ERGAST_API_BASE}/${SERIES}/${season}/${this._route.snapshot.params['dataSet']}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
-    //     );
-    //   })
-    // );
-    return {
-      drivers: 'drivers',
-      results: 'results',
-      qualifying: 'qualifying',
-      standings: 'standings',
-    };
+  public getSeasonData(config: GetSeasonsConfig) {
+    const { year, dataSet, limit, offset } = config;
+
+    return this._http
+      .get(
+        `${ERGAST_API_BASE}/${SERIES}/${year}/${dataSet}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
+      )
+      .pipe(
+        map((data: any) => {
+          let results;
+
+          switch (dataSet) {
+            case DataSets.Drivers:
+              results = data.MRData.DriverTable.Drivers;
+              break;
+            case DataSets.Standings:
+              results =
+                data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
+              break;
+            case DataSets.Qualifying:
+              results = data.MRData.RaceTable.Races;
+              break;
+            case DataSets.Results:
+              results = data.MRData.RaceTable.Races;
+              break;
+            default:
+              results = {};
+          }
+
+          return results;
+        })
+      );
   }
 }
 

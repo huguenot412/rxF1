@@ -15,11 +15,11 @@ import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Drivers Data</h1>
-    <pre>{{ (driversData | json) || 'Loading...' }}</pre>
+    <pre>{{ (dataSet | json) || 'Loading...' }}</pre>
   `,
   styles: [],
 })
 export class DriversComponent {
   @Input()
-  public driversData: any;
+  public dataSet: any;
 }

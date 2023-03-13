@@ -6,19 +6,19 @@ import { QualifyingComponent } from './components/qualifying/qualifying.componen
 import { ResultsComponent } from './components/results/results.component';
 import { SeasonsComponent } from './components/seasons/seasons.component';
 import { StandingsComponent } from './components/standings/standings.component';
+import { RouteParams } from './enums/route-params';
 import { seasonsResolver } from './resolvers/seasons-resolver';
 
 const routes: Routes = [
   { path: '', component: SeasonsComponent },
   { path: 'seasons', component: SeasonsComponent },
   {
-    path: 'seasons/:year',
+    path: `seasons/:${RouteParams.Year}`,
     component: SeasonsComponent,
   },
   {
-    path: 'seasons/:year/:dataSet',
+    path: `seasons/:year/:${RouteParams.DataSet}`,
     component: SeasonsComponent,
-    resolve: { dataSet: seasonsResolver },
   },
   { path: '**', component: PageNotFoundComponent },
 ];

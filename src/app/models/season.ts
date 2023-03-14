@@ -4,9 +4,9 @@ import { ResultsResponse } from './results-response';
 import { StandingsResponse } from './standings-response';
 
 export interface Season {
-  drivers: DriversResponse;
-  results: ResultsResponse;
-  qualifying: QualifyingResponse;
-  driverStandings: StandingsResponse;
+  drivers?: DriversResponse;
+  results?: ResultsResponse;
+  qualifying?: QualifyingResponse;
+  driverStandings?: StandingsResponse;
   year: string;
 }

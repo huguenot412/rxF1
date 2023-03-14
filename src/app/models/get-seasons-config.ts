@@ -1,6 +1,6 @@
 import { DataSets } from '../enums/data-sets';
 
-export interface GetSeasonsConfig {
+export interface RequestConfig {
   year: number;
   dataSet: DataSets;
   limit: number;

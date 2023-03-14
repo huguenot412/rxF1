@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map, Observable, share } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
-import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
 import { DriversResponse } from '../models/drivers-response';
 import { GetSeasonsConfig } from '../models/get-seasons-config';

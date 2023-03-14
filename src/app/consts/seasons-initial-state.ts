@@ -1,39 +1,44 @@
-import { Season } from '../models/season';
+import { Season, SeasonData } from '../models/season';
+
+export const EMPTY_SEASON_DATA: SeasonData = {
+  data: [],
+  total: 0,
+};
 
 export const SEASONS_INITIAL_STATE: Season[] = [
   {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    driverStandings: {},
+    drivers: structuredClone(EMPTY_SEASON_DATA),
+    results: structuredClone(EMPTY_SEASON_DATA),
+    qualifying: structuredClone(EMPTY_SEASON_DATA),
+    driverStandings: structuredClone(EMPTY_SEASON_DATA),
     year: '2018',
   },
   {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    driverStandings: {},
+    drivers: structuredClone(EMPTY_SEASON_DATA),
+    results: structuredClone(EMPTY_SEASON_DATA),
+    qualifying: structuredClone(EMPTY_SEASON_DATA),
+    driverStandings: structuredClone(EMPTY_SEASON_DATA),
     year: '2019',
   },
   {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    driverStandings: {},
+    drivers: structuredClone(EMPTY_SEASON_DATA),
+    results: structuredClone(EMPTY_SEASON_DATA),
+    qualifying: structuredClone(EMPTY_SEASON_DATA),
+    driverStandings: structuredClone(EMPTY_SEASON_DATA),
     year: '2020',
   },
   {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    driverStandings: {},
+    drivers: structuredClone(EMPTY_SEASON_DATA),
+    results: structuredClone(EMPTY_SEASON_DATA),
+    qualifying: structuredClone(EMPTY_SEASON_DATA),
+    driverStandings: structuredClone(EMPTY_SEASON_DATA),
     year: '2021',
   },
   {
-    drivers: {},
-    results: {},
-    qualifying: {},
-    driverStandings: {},
+    drivers: structuredClone(EMPTY_SEASON_DATA),
+    results: structuredClone(EMPTY_SEASON_DATA),
+    qualifying: structuredClone(EMPTY_SEASON_DATA),
+    driverStandings: structuredClone(EMPTY_SEASON_DATA),
     year: '2022',
   },
 ];

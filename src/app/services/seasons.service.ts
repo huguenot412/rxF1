@@ -60,9 +60,17 @@ export class SeasonsService {
 }
 
 // List of Drivers per season.
+// http://ergast.com/api/f1/{{year}}/drivers
+
 // List of Races per season with final results.
+// http://ergast.com/api/f1/{{year}}/{{round}}/results
+
 // Qualifying Results per race in every single season.
+// http://ergast.com/api/f1/{{year}}/{{round}}/qualifying
+
 // Driver Standings after a race.
+// http://ergast.com/api/f1/{{year}}/{{round}}/driverStandings
+
 // BONUS:
 //     How many cars "Finished".
 //     How many cars had an "Accident".

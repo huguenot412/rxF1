@@ -56,20 +56,22 @@ import { PaginationComponent } from '../pagination/pagination.component';
         <f1-season-details/>
       </ng-container>
 
-      <ng-container *ngrxLet="route.params"></ng-container>
+      <ng-container *ngrxLet="{year: year$, dataSet: dataSet$}"></ng-container>
   `,
   styles: [``],
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public route = inject(ActivatedRoute);
+  private _seasonsService = inject(SeasonsService);
+  public year$ = this._seasonsService.year$;
+  public dataSet$ = this._seasonsService.dataSet$;
   public state$ = this._seasonsStore.everything$;
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
   public selectedDataSet$ = this._seasonsStore.selectedDataSet$;
   public selectedData$ = this._seasonsStore.selectedData$;
   public seasons$ = this._seasonsStore.seasons$;
   public season$ = this._seasonsStore.year$;
-  public dataSet$ = this._seasonsStore.dataSet$;
+  // public dataSet$ = this._seasonsStore.dataSet$;
   public page$ = this._seasonsStore.currentPage$;
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;

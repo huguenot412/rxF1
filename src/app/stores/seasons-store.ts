@@ -29,15 +29,12 @@ const defaultState: SeasonsState = {
 
 @Injectable()
 export class SeasonsStore extends ComponentStore<SeasonsState> {
-  private readonly _route = inject(ActivatedRoute);
   private readonly _seasonsService = inject(SeasonsService);
+  private readonly _route = inject(ActivatedRoute);
   public readonly everything$ = this.select((state) => state);
-  public readonly year$ = this._route.params.pipe(
-    map((params) => params[RouteParams.Year])
-  );
-  public readonly dataSet$ = this._route.params.pipe(
-    map((params) => params[RouteParams.DataSet])
-  );
+  public readonly year$ = this._seasonsService.year$;
+  public readonly dataSet$ = this._seasonsService.dataSet$;
+  // Make service one source of truth for route params observable and make sure they are subscribed to in template
   public readonly seasons$ = this.select(({ seasons }) => seasons);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
@@ -94,9 +91,11 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     }
   );
   public readonly getDataConfig$ = this.select(
+    this.year$,
+    this.dataSet$,
     this.limit$,
     this.offset$,
-    (limit, offset) => ({ limit, offset })
+    (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
 
   public readonly dataToDisplay$ = this.select(

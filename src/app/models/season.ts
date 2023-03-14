@@ -1,7 +1,12 @@
 export interface Season {
-  drivers: any;
-  results: any;
-  qualifying: any;
-  driverStandings: any;
+  drivers: SeasonData;
+  results: SeasonData;
+  qualifying: SeasonData;
+  driverStandings: SeasonData;
   year: string;
+}
+
+export interface SeasonData {
+  data: any[];
+  total: number;
 }

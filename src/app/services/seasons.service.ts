@@ -1,27 +1,33 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { DataSets } from '../enums/data-sets';
+import { RouteParams } from '../enums/route-params';
 import { GetSeasonsConfig } from '../models/get-seasons-config';
+import { SeasonData } from '../models/season';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SeasonsService {
   private _http = inject(HttpClient);
+  private _route = inject(ActivatedRoute);
 
   public getSeasonData(config: GetSeasonsConfig) {
-    const { year, dataSet, limit, offset } = config;
+    const { limit, offset } = config;
+    const year = this._route.snapshot.params[RouteParams.Year];
+    const dataSet = this._route.snapshot.params[RouteParams.DataSet];
 
     return this._http
-      .get(
+      .get<SeasonData>(
         `${ERGAST_API_BASE}/${SERIES}/${year}/${dataSet}${RESPONSE_FORMAT}?limit=${limit}&offset=${offset}`
       )
       .pipe(
         map((data: any) => {
-          let results = {
-            data: {},
+          let results: SeasonData = {
+            data: [],
             total: data.MRData.total,
           };
 
@@ -34,7 +40,7 @@ export class SeasonsService {
                 data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
               break;
             case DataSets.Qualifying:
-              results.data = data.MRData.RaceTable.Races;
+              results.data = data.MRData.RaceTable.Races[0].QualifyingResults;
               break;
             case DataSets.Results:
               results.data = data.MRData.RaceTable.Races;

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsService } from 'src/app/services/seasons.service';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DataSets } from 'src/app/enums/data-sets';
 import { DriversComponent } from '../drivers/drivers.component';
 import { ResultsComponent } from '../results/results.component';
@@ -41,7 +41,6 @@ import { PaginationComponent } from '../pagination/pagination.component';
         <ul>
           <li *ngFor="let category of categories | keyvalue">
             <a
-              *ngrxLet="dataSet$ as dataSet"
               [routerLink]="['/seasons', season, category.key]"
               (click)="getSeasonData()">
               {{ category.value }}
@@ -57,17 +56,13 @@ import { PaginationComponent } from '../pagination/pagination.component';
         <f1-season-details/>
       </ng-container>
 
-      <ng-container *ngrxLet="{
-        state: state$,
-        selectedSeason: selectedSeason$,
-        selectedDataSet: selectedDataSet$,
-        selectedData: selectedData$
-      }"></ng-container>
+      <ng-container *ngrxLet="route.params"></ng-container>
   `,
   styles: [``],
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
+  public route = inject(ActivatedRoute);
   public state$ = this._seasonsStore.everything$;
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
   public selectedDataSet$ = this._seasonsStore.selectedDataSet$;

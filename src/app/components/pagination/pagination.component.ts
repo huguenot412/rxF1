@@ -1,27 +1,20 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  inject,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PaginationConfig } from 'src/app/models/pagination-config';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
+import { LetModule } from '@ngrx/component';
 
 @Component({
   selector: 'f1-pagination',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LetModule],
   template: `
-    <ul class="pages-list">
+    <h2>Pagination!</h2>
+    <ul class="pages-list" *ngrxLet="limit$ as limit">
       <li
         class="page"
         [ngClass]="{ highlighted: page === (currentPage$ | async) }"
         *ngFor="let page of pages$ | async"
-        (click)="updateCurrentPage(page)"
+        (click)="updateCurrentPage(page, limit)"
       >
         {{ page }}
       </li>
@@ -59,12 +52,26 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 })
 export class PaginationComponent {
   private _seasonsStore = inject(SeasonsStore);
-  @Output()
-  public pageChanged = new EventEmitter<number>();
   public pages$ = this._seasonsStore.pages$;
   public currentPage$ = this._seasonsStore.currentPage$;
+  public getDataConfig$ = this._seasonsStore.getDataConfig$;
+  public limit$ = this._seasonsStore.limit$;
 
-  public updateCurrentPage(page: number) {
-    this._seasonsStore.patchState({ page });
+  public updateCurrentPage(currentPage: number, limit: number) {
+    this._seasonsStore.patchState({ currentPage });
+    this._getData(limit);
+  }
+
+  private _getData(limit: number): void {
+    console.log(limit);
+    if (limit < 1) return;
+    this._seasonsStore.getSeasonData(this.getDataConfig$);
   }
 }
+
+// Check if data for view has already been fetched
+// if data.length < page * limit
+// Calculate number of missing results
+// Set the offset and limit
+// Fetch missing results
+// Patch missing results

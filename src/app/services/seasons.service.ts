@@ -59,10 +59,14 @@ export class SeasonsService {
   }
 }
 
-// Drivers
-// Race Results
-// Qualifying Results
-// Driver Standings
+// List of Drivers per season.
+// List of Races per season with final results.
+// Qualifying Results per race in every single season.
+// Driver Standings after a race.
+// BONUS:
+//     How many cars "Finished".
+//     How many cars had an "Accident".
+//     How many cars finished +1 Lap.
 
 // BONUS:
 //     How many cars "Finished".

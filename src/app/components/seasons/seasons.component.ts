@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsService } from 'src/app/services/seasons.service';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { DataSets } from 'src/app/enums/data-sets';
 import { DriversComponent } from '../drivers/drivers.component';
 import { ResultsComponent } from '../results/results.component';
@@ -36,13 +36,13 @@ import { PaginationComponent } from '../pagination/pagination.component';
           <a [routerLink]="['/seasons/' + year, params.dataSet || '']">{{ year }}</a>
         </li>
       </ul>
-      <ng-container *ngIf="year$ | async as year; else seasonsEmptyState">
-        <h1>{{ year }}</h1>
+      <ng-container *ngIf="params.year; else seasonsEmptyState">
+        <h1>{{ params.year }}</h1>
         <ul>
           <li *ngFor="let category of categories | keyvalue">
             <a
-              [routerLink]="['/seasons', year, category.key]"
-              (click)="getSeasonData(params.dataSet)">
+              [routerLink]="['/seasons', params.year, category.key]"
+              (click)="getSeasonData(category.key)">
               {{ category.value }}
             </a>
           </li>
@@ -63,17 +63,8 @@ export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
   private _seasonsService = inject(SeasonsService);
   public dataSet$ = this._seasonsService.dataSet$;
-  public selectedSeason$ = this._seasonsStore.selectedSeason$;
-  public selectedDataSet$ = this._seasonsStore.selectedCategory$;
-  public selectedData$ = this._seasonsStore.selectedData$;
-  public seasons$ = this._seasonsStore.seasons$;
-  public year$ = this._seasonsStore.year$;
+  public year$ = this._seasonsService.year$;
   public years$ = this._seasonsStore.years$;
-  public page$ = this._seasonsStore.currentPage$;
-  public limit$ = this._seasonsStore.limit$;
-  public offset$ = this._seasonsStore.offset$;
-  public requestConfig$ = this._seasonsStore.requestConfig$;
-  public dataSets = DataSets;
   public categories = CATEGORIES;
 
   public getSeasonData(dataSet: DataSets): void {

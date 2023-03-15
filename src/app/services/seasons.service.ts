@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map, Observable, share } from 'rxjs';
+import { map, Observable, share, shareReplay } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { RouteParams } from '../enums/route-params';
 import { DriversResponse } from '../models/drivers-response';
@@ -18,11 +18,11 @@ export class SeasonsService {
   private _route = inject(ActivatedRoute);
   public year$ = this._route.params.pipe(
     map((params) => params[RouteParams.Year]),
-    share()
+    shareReplay()
   );
   public dataSet$ = this._route.params.pipe(
     map((params) => params[RouteParams.DataSet]),
-    share()
+    shareReplay()
   );
 
   public getDrivers(config: RequestConfig): Observable<DriversResponse> {

@@ -1,20 +1,34 @@
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
-import { exhaustMap, Observable } from 'rxjs';
+import {
+  exhaustMap,
+  Observable,
+  startWith,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
 import { Years } from '../enums/years.enum';
 import { DriversResponse } from '../models/drivers-response';
 import { RequestConfig } from '../models/get-seasons-config';
-import { QualifyingResult } from '../models/qualifying-response';
-import { Result } from '../models/results-response';
+import {
+  QualifyingResponse,
+  QualifyingResult,
+} from '../models/qualifying-response';
+import { Result, ResultsResponse } from '../models/results-response';
 import { Season } from '../models/season';
-import { DriverStanding } from '../models/standings-response';
+import { Driver } from '../models/seasons-response';
+import {
+  DriverStanding,
+  StandingsResponse,
+} from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
 
 export interface SeasonsState {
-  years: Years[];
+  years: string[];
   seasons: Season[];
   currentPage: number;
   resultsPerPage: number;
@@ -27,13 +41,7 @@ export interface SeasonUpdaterConfig {
 }
 
 const defaultState: SeasonsState = {
-  years: [
-    Years.Year2018,
-    Years.Year2019,
-    Years.Year2020,
-    Years.Year2021,
-    Years.Year2022,
-  ],
+  years: ['2018', '2019', '2020', '2021', '2022'],
   seasons: [],
   currentPage: 1,
   resultsPerPage: 10,
@@ -51,13 +59,15 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _route = inject(ActivatedRoute);
   public readonly year$ = this._seasonsService.year$;
   public readonly dataSet$ = this._seasonsService.dataSet$;
-  public readonly seasons$ = this.select(({ seasons }) => seasons);
+  public readonly seasons$ = this.select(({ seasons }) => seasons).pipe(
+    tap((data) => console.log('seasons', data))
+  );
   public readonly years$ = this.select(({ years }) => years);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this.year$,
     (seasons, year) => seasons.find((season) => season.year == year)
-  );
+  ).pipe(tap((data) => console.log('selected season', data)));
   public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
     this.dataSet$,
@@ -75,13 +85,13 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.totalResults$,
     this.resultsPerPage$,
     (total, resultsPerPage) => Math.ceil(total / resultsPerPage)
-  );
+  ).pipe(tap((data) => console.log('pages count', data)));
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
     [...Array(pageCount).keys()].map((num) => num + 1)
   );
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,
-    (season) => season?.drivers?.MRData.DriverTable.Drivers
+    (season) => season?.drivers?.MRData.DriverTable.Drivers || ([] as Driver[])
   );
   public readonly selectedQualifyingResults$ = this.select(
     this.selectedSeason$,
@@ -120,7 +130,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return driverStandings;
     }
-  );
+  ).pipe(tap((data) => console.log('standings', data)));
   public readonly selectedData$ = this.select(
     this.dataSet$,
     this.selectedDrivers$,
@@ -135,6 +145,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       selectedDriverStandings
     ) => {
       let data;
+
       switch (dataSet) {
         case DataSets.Drivers:
           data = selectedDrivers;
@@ -185,7 +196,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return offset;
     }
-  );
+  ).pipe(startWith(0));
   public readonly limit$ = this.select(
     this.offset$,
     this.currentPage$,
@@ -198,7 +209,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return limit;
     }
-  );
+  ).pipe(startWith(10));
   public readonly requestConfig$ = this.select(
     this.year$,
     this.dataSet$,
@@ -206,7 +217,6 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.offset$,
     (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
-
   public readonly dataToDisplay$ = this.select(
     this.selectedData$,
     this.currentPage$,
@@ -227,7 +237,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly updateDrivers = this.updater(
     (state: SeasonsState, data: DriversResponse) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
-      const { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
+      let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
         year
       );
@@ -244,10 +254,146 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         };
       }
 
-      const newSeasonDrivers = newSeason[DataSets.Drivers];
-      let driversData = newSeasonDrivers!.MRData.DriverTable!.Drivers;
+      let drivers = newSeason[DataSets.Drivers];
+
+      if (!drivers) {
+        drivers = data;
+        newSeason = {
+          ...newSeason,
+          drivers,
+        } as Season;
+      }
+
+      let driversData = drivers!.MRData.DriverTable!.Drivers;
       const newDriversData = data.MRData.DriverTable!.Drivers;
       driversData = [...driversData, ...newDriversData];
+      newSeasons.splice(newSeasonIndex, 1, newSeason);
+
+      return {
+        ...state,
+        seasons: newSeasons,
+      };
+    }
+  );
+
+  public readonly updateResults = this.updater(
+    (state: SeasonsState, data: ResultsResponse) => {
+      const year: string = this._route.snapshot.params[RouteParams.Year];
+      let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
+        state.seasons,
+        year
+      );
+
+      if (!newSeason) {
+        const seasonWithResults = {
+          results: data,
+          year,
+        } as Season;
+
+        return {
+          ...state,
+          seasons: [...state.seasons, seasonWithResults],
+        };
+      }
+
+      let results = newSeason[DataSets.Results];
+
+      if (!results) {
+        results = data;
+        newSeason = {
+          ...newSeason,
+          results,
+        } as Season;
+      }
+
+      let resultsData = results!.MRData.RaceTable!.Races;
+      const newDriversData = data.MRData.RaceTable!.Races;
+      resultsData = [...resultsData, ...newDriversData];
+      newSeasons.splice(newSeasonIndex, 1, newSeason);
+
+      return {
+        ...state,
+        seasons: newSeasons,
+      };
+    }
+  );
+
+  public readonly updateQualifying = this.updater(
+    (state: SeasonsState, data: QualifyingResponse) => {
+      const year: string = this._route.snapshot.params[RouteParams.Year];
+      let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
+        state.seasons,
+        year
+      );
+
+      if (!newSeason) {
+        const seasonWithQualifying = {
+          qualifying: data,
+          year,
+        } as Season;
+
+        return {
+          ...state,
+          seasons: [...state.seasons, seasonWithQualifying],
+        };
+      }
+
+      let qualifying = newSeason[DataSets.Qualifying];
+
+      if (!qualifying) {
+        qualifying = data;
+        newSeason = {
+          ...newSeason,
+          qualifying,
+        } as Season;
+      }
+
+      let qualifyingData = qualifying!.MRData.RaceTable!.Races;
+      const newQualifyingData = data.MRData.RaceTable!.Races;
+      qualifyingData = [...qualifyingData, ...newQualifyingData];
+      newSeasons.splice(newSeasonIndex, 1, newSeason);
+
+      return {
+        ...state,
+        seasons: newSeasons,
+      };
+    }
+  );
+
+  public readonly updateStandings = this.updater(
+    (state: SeasonsState, data: StandingsResponse) => {
+      const year: string = this._route.snapshot.params[RouteParams.Year];
+      let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
+        state.seasons,
+        year
+      );
+
+      if (!newSeason) {
+        const seasonWithStandings = {
+          driverStandings: data,
+          year,
+        } as Season;
+
+        return {
+          ...state,
+          seasons: [...state.seasons, seasonWithStandings],
+        };
+      }
+
+      let driverStandings = newSeason[DataSets.Standings];
+
+      if (!driverStandings) {
+        driverStandings = data;
+        newSeason = {
+          ...newSeason,
+          driverStandings: data,
+        } as Season;
+      }
+
+      let standingsData =
+        driverStandings!.MRData.StandingsTable!.StandingsLists;
+      const newStandingsData = data.MRData.StandingsTable!.StandingsLists;
+      standingsData = [...standingsData, ...newStandingsData];
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {
@@ -260,34 +406,75 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   readonly getData = (dataSet: DataSets): void => {
     switch (dataSet) {
       case DataSets.Drivers:
-        this.getDrivers(this.requestConfig$);
+        this.getDrivers();
         break;
-      // case DataSets.Qualifying:
-      //   this.getQualifying(this.requestConfig$);
-      //   break;
-      // case DataSets.Results:
-      //   this.getResults(this.requestConfig$);
-      //   break;
-      // case DataSets.Standings:
-      //   this.getStandings(this.requestConfig$);
-      //   break;
+      case DataSets.Qualifying:
+        this.getQualifying();
+        break;
+      case DataSets.Results:
+        this.getResults();
+        break;
+      case DataSets.Standings:
+        this.getStandings();
+        break;
     }
   };
 
-  readonly getDrivers = this.effect(
-    (requestConfig$: Observable<RequestConfig>) => {
-      return requestConfig$.pipe(
-        exhaustMap((config) =>
-          this._seasonsService.getDrivers(config).pipe(
-            tapResponse(
-              (data) => this.updateDrivers(data),
-              (error) => console.log(error)
-            )
+  readonly getDrivers = this.effect((request$: Observable<void>) => {
+    return request$.pipe(
+      withLatestFrom(this.requestConfig$),
+      switchMap(([, config]) =>
+        this._seasonsService.getDrivers(config).pipe(
+          tapResponse(
+            (data) => this.updateDrivers(data),
+            (error) => console.log(error)
           )
         )
-      );
-    }
-  );
+      )
+    );
+  });
+
+  readonly getResults = this.effect((request$: Observable<void>) => {
+    return request$.pipe(
+      withLatestFrom(this.requestConfig$),
+      switchMap(([, config]) =>
+        this._seasonsService.getResults(config).pipe(
+          tapResponse(
+            (data) => this.updateResults(data),
+            (error) => console.log(error)
+          )
+        )
+      )
+    );
+  });
+
+  readonly getQualifying = this.effect((request$: Observable<void>) => {
+    return request$.pipe(
+      withLatestFrom(this.requestConfig$),
+      switchMap(([, config]) =>
+        this._seasonsService.getQualifying(config).pipe(
+          tapResponse(
+            (data) => this.updateQualifying(data),
+            (error) => console.log(error)
+          )
+        )
+      )
+    );
+  });
+
+  readonly getStandings = this.effect((request$: Observable<void>) => {
+    return request$.pipe(
+      withLatestFrom(this.requestConfig$),
+      switchMap(([, config]) =>
+        this._seasonsService.getStandings(config).pipe(
+          tapResponse(
+            (data) => this.updateStandings(data),
+            (error) => console.log(error)
+          )
+        )
+      )
+    );
+  });
 
   private _cloneSeasons(seasons: Season[], year: string): SeasonsClone {
     const newSeasons: Season[] = structuredClone(seasons);

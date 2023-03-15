@@ -1,6 +1,5 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataSets } from 'src/app/enums/data-sets';
 import { CATEGORIES } from 'src/app/consts/categories';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 

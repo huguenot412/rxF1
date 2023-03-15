@@ -5,7 +5,7 @@ import { map, Observable, share } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { RouteParams } from '../enums/route-params';
 import { DriversResponse } from '../models/drivers-response';
-import { GetSeasonsConfig } from '../models/get-seasons-config';
+import { RequestConfig } from '../models/get-seasons-config';
 import { QualifyingResponse } from '../models/qualifying-response';
 import { ResultsResponse } from '../models/results-response';
 import { StandingsResponse } from '../models/standings-response';
@@ -25,7 +25,7 @@ export class SeasonsService {
     share()
   );
 
-  public getDrivers(config: GetSeasonsConfig): Observable<DriversResponse> {
+  public getDrivers(config: RequestConfig): Observable<DriversResponse> {
     const { year, limit, offset } = config;
 
     return this._http.get<DriversResponse>(
@@ -33,7 +33,7 @@ export class SeasonsService {
     );
   }
 
-  public getResults(config: GetSeasonsConfig): Observable<ResultsResponse> {
+  public getResults(config: RequestConfig): Observable<ResultsResponse> {
     const { year, limit, offset } = config;
 
     return this._http.get<ResultsResponse>(
@@ -41,9 +41,7 @@ export class SeasonsService {
     );
   }
 
-  public getQualifying(
-    config: GetSeasonsConfig
-  ): Observable<QualifyingResponse> {
+  public getQualifying(config: RequestConfig): Observable<QualifyingResponse> {
     const { year, limit, offset } = config;
 
     return this._http.get<QualifyingResponse>(
@@ -51,7 +49,7 @@ export class SeasonsService {
     );
   }
 
-  public getStandings(config: GetSeasonsConfig): Observable<StandingsResponse> {
+  public getStandings(config: RequestConfig): Observable<StandingsResponse> {
     const { year, limit, offset } = config;
 
     return this._http.get<StandingsResponse>(

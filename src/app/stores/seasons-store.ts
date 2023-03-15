@@ -1,15 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
-import { exhaustMap, map, Observable, switchMap, tap } from 'rxjs';
+import { exhaustMap, Observable } from 'rxjs';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
+import { Years } from '../enums/years.enum';
 import { DriversResponse } from '../models/drivers-response';
-import { GetSeasonsConfig } from '../models/get-seasons-config';
+import { RequestConfig } from '../models/get-seasons-config';
+import { QualifyingResult } from '../models/qualifying-response';
+import { Result } from '../models/results-response';
 import { Season } from '../models/season';
+import { DriverStanding } from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
 
 export interface SeasonsState {
+  years: Years[];
   seasons: Season[];
   currentPage: number;
   resultsPerPage: number;
@@ -22,6 +27,13 @@ export interface SeasonUpdaterConfig {
 }
 
 const defaultState: SeasonsState = {
+  years: [
+    Years.Year2018,
+    Years.Year2019,
+    Years.Year2020,
+    Years.Year2021,
+    Years.Year2022,
+  ],
   seasons: [],
   currentPage: 1,
   resultsPerPage: 10,
@@ -37,24 +49,23 @@ interface SeasonsClone {
 export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _route = inject(ActivatedRoute);
-  public readonly everything$ = this.select((state) => state);
   public readonly year$ = this._seasonsService.year$;
   public readonly dataSet$ = this._seasonsService.dataSet$;
-  // Make service one source of truth for route params observable and make sure they are subscribed to in template
   public readonly seasons$ = this.select(({ seasons }) => seasons);
+  public readonly years$ = this.select(({ years }) => years);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this.year$,
     (seasons, year) => seasons.find((season) => season.year == year)
   );
-  public readonly selectedDataSet$ = this.select(
+  public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
     this.dataSet$,
     (season, dataSet: DataSets) => (season ? season[dataSet] : null)
   );
   public readonly totalResults$ = this.select(
-    this.selectedDataSet$,
-    (data) => data?.total || 0
+    this.selectedCategory$,
+    (data) => Number(data?.MRData.total) || 0
   );
   public readonly currentPage$ = this.select(({ currentPage }) => currentPage);
   public readonly resultsPerPage$ = this.select(
@@ -68,20 +79,112 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
     [...Array(pageCount).keys()].map((num) => num + 1)
   );
+  public readonly selectedDrivers$ = this.select(
+    this.selectedSeason$,
+    (season) => season?.drivers?.MRData.DriverTable.Drivers
+  );
+  public readonly selectedQualifyingResults$ = this.select(
+    this.selectedSeason$,
+    (season) => {
+      let qualifyingResults: QualifyingResult[] = [];
+      season?.qualifying?.MRData.RaceTable.Races.forEach(
+        (race) =>
+          (qualifyingResults = [
+            ...qualifyingResults,
+            ...race.QualifyingResults!,
+          ])
+      );
+
+      return qualifyingResults;
+    }
+  );
+  public readonly selectedResults$ = this.select(
+    this.selectedSeason$,
+    (season) => {
+      let results: Result[] = [];
+      season?.results?.MRData.RaceTable.Races.forEach(
+        (race) => (results = [...results, ...race.Results!])
+      );
+
+      return results;
+    }
+  );
+  public readonly selectedDriverStandings$ = this.select(
+    this.selectedSeason$,
+    (season) => {
+      let driverStandings: DriverStanding[] = [];
+      season?.driverStandings?.MRData.StandingsTable.StandingsLists.forEach(
+        (standing) =>
+          (driverStandings = [...driverStandings, ...standing.DriverStandings])
+      );
+
+      return driverStandings;
+    }
+  );
   public readonly selectedData$ = this.select(
-    this.selectedDataSet$,
     this.dataSet$,
-    (selectedDataSet, dataSet) => {
-      if (!selectedDataSet || !selectedDataSet.data) return [];
+    this.selectedDrivers$,
+    this.selectedQualifyingResults$,
+    this.selectedResults$,
+    this.selectedDriverStandings$,
+    (
+      dataSet,
+      selectedDrivers,
+      selectedQualifyingResults,
+      selectedResults,
+      selectedDriverStandings
+    ) => {
+      let data;
+      switch (dataSet) {
+        case DataSets.Drivers:
+          data = selectedDrivers;
+          break;
+        case DataSets.Qualifying:
+          data = selectedQualifyingResults;
+          break;
+        case DataSets.Results:
+          data = selectedResults;
+          break;
+        case DataSets.Standings:
+          data = selectedDriverStandings;
+          break;
+      }
 
-      if (dataSet === DataSets.Results) return selectedDataSet.data[0].Results;
-
-      return selectedDataSet.data;
+      return data;
     }
   );
   public readonly offset$ = this.select(
-    this.selectedData$,
-    (data) => data.length
+    this.dataSet$,
+    this.selectedDrivers$,
+    this.selectedQualifyingResults$,
+    this.selectedResults$,
+    this.selectedDriverStandings$,
+    (
+      dataSet,
+      selectedDrivers,
+      selectedQualifyingResults,
+      selectedResults,
+      selectedDriverStandings
+    ) => {
+      let offset = 0;
+
+      switch (dataSet) {
+        case DataSets.Drivers:
+          offset = selectedDrivers!.length;
+          break;
+        case DataSets.Qualifying:
+          offset = selectedQualifyingResults.length;
+          break;
+        case DataSets.Results:
+          offset = selectedResults.length;
+          break;
+        case DataSets.Standings:
+          offset = selectedDriverStandings.length;
+          break;
+      }
+
+      return offset;
+    }
   );
   public readonly limit$ = this.select(
     this.offset$,
@@ -113,38 +216,13 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const sliceStart = range - resultsPerPage;
       const sliceEnd = sliceStart + resultsPerPage;
 
-      return data.slice(sliceStart, sliceEnd);
+      return data!.slice(sliceStart, sliceEnd);
     }
   );
 
   constructor() {
     super(defaultState);
   }
-
-  // public readonly updateSeason = this.updater(
-  //   (state: SeasonsState, seasonData: SeasonData) => {
-  //     const year: string = this._route.snapshot.params[RouteParams.Year];
-  //     const dataSet: DataSets =
-  //       this._route.snapshot.params[RouteParams.DataSet];
-  //     const newSeasons: Season[] = structuredClone(state.seasons);
-  //     const newSeason = newSeasons.find((item: Season) => item.year === year);
-  //     const newSeasonIndex = newSeasons.findIndex(
-  //       (item: Season) => item.year === year
-  //     );
-
-  //     if (!newSeason) return { ...state };
-
-  //     const newSeasonCategory = newSeason[dataSet];
-  //     newSeasonCategory.data = [...newSeasonCategory.data, ...seasonData.data];
-  //     newSeasonCategory.total = seasonData.total;
-  //     newSeasons.splice(newSeasonIndex, 1, newSeason);
-
-  //     return {
-  //       ...state,
-  //       seasons: newSeasons,
-  //     };
-  //   }
-  // );
 
   public readonly updateDrivers = this.updater(
     (state: SeasonsState, data: DriversResponse) => {
@@ -166,8 +244,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         };
       }
 
-      const newSeasonCategory = newSeason[DataSets.Drivers];
-      let driversData = newSeasonCategory!.MRData.DriverTable!.Drivers;
+      const newSeasonDrivers = newSeason[DataSets.Drivers];
+      let driversData = newSeasonDrivers!.MRData.DriverTable!.Drivers;
       const newDriversData = data.MRData.DriverTable!.Drivers;
       driversData = [...driversData, ...newDriversData];
       newSeasons.splice(newSeasonIndex, 1, newSeason);
@@ -179,13 +257,30 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     }
   );
 
+  readonly getData = (dataSet: DataSets): void => {
+    switch (dataSet) {
+      case DataSets.Drivers:
+        this.getDrivers(this.requestConfig$);
+        break;
+      // case DataSets.Qualifying:
+      //   this.getQualifying(this.requestConfig$);
+      //   break;
+      // case DataSets.Results:
+      //   this.getResults(this.requestConfig$);
+      //   break;
+      // case DataSets.Standings:
+      //   this.getStandings(this.requestConfig$);
+      //   break;
+    }
+  };
+
   readonly getDrivers = this.effect(
-    (requestConfig$: Observable<GetSeasonsConfig>) => {
-      return getDataConfig$.pipe(
+    (requestConfig$: Observable<RequestConfig>) => {
+      return requestConfig$.pipe(
         exhaustMap((config) =>
-          this._seasonsService.getSeasonData(config).pipe(
+          this._seasonsService.getDrivers(config).pipe(
             tapResponse(
-              (data) => this.updateSeason(data),
+              (data) => this.updateDrivers(data),
               (error) => console.log(error)
             )
           )

@@ -1,13 +1,10 @@
-export interface MRData<T> {
+export interface MRData {
   xmlns: string;
   series: string;
   url: string;
   limit: string;
   offset: string;
   total: string;
-  RaceTable?: T;
-  DriverTable?: T;
-  StandingsTable?: T;
 }
 
 export interface Constructor {

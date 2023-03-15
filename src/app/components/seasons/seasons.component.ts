@@ -30,19 +30,19 @@ import { PaginationComponent } from '../pagination/pagination.component';
   providers: [SeasonsService, SeasonsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-
+    <ng-container *ngrxLet="{year: year$, dataSet: dataSet$} as params">
       <ul>
-        <li *ngFor="let season of seasons$ | async">
-          <a [routerLink]="['/seasons/' + season.year, (dataSet$ | async) || '']">{{ season.year }}</a>
+        <li *ngFor="let year of years$ | async">
+          <a [routerLink]="['/seasons/' + year, params.dataSet || '']">{{ year }}</a>
         </li>
       </ul>
-      <ng-container *ngIf="season$ | async as season; else seasonsEmptyState">
-        <h1>{{ season }}</h1>
+      <ng-container *ngIf="year$ | async as year; else seasonsEmptyState">
+        <h1>{{ year }}</h1>
         <ul>
           <li *ngFor="let category of categories | keyvalue">
             <a
-              [routerLink]="['/seasons', season, category.key]"
-              (click)="getSeasonData()">
+              [routerLink]="['/seasons', year, category.key]"
+              (click)="getSeasonData(params.dataSet)">
               {{ category.value }}
             </a>
           </li>
@@ -51,35 +51,32 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <ng-template #seasonsEmptyState>
         <p>Choose a season</p>
       </ng-template>
-      <ng-container *ngIf="dataSet$ | async as dataSet">
+      <ng-container *ngIf="params.dataSet">
         <f1-pagination/>
         <f1-season-details/>
       </ng-container>
-
-      <ng-container *ngrxLet="{year: year$, dataSet: dataSet$}"></ng-container>
+    </ng-container>
   `,
   styles: [``],
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
   private _seasonsService = inject(SeasonsService);
-  public year$ = this._seasonsService.year$;
   public dataSet$ = this._seasonsService.dataSet$;
-  public state$ = this._seasonsStore.everything$;
   public selectedSeason$ = this._seasonsStore.selectedSeason$;
-  public selectedDataSet$ = this._seasonsStore.selectedDataSet$;
+  public selectedDataSet$ = this._seasonsStore.selectedCategory$;
   public selectedData$ = this._seasonsStore.selectedData$;
   public seasons$ = this._seasonsStore.seasons$;
-  public season$ = this._seasonsStore.year$;
-  // public dataSet$ = this._seasonsStore.dataSet$;
+  public year$ = this._seasonsStore.year$;
+  public years$ = this._seasonsStore.years$;
   public page$ = this._seasonsStore.currentPage$;
   public limit$ = this._seasonsStore.limit$;
   public offset$ = this._seasonsStore.offset$;
-  public getDataConfig$ = this._seasonsStore.getDataConfig$;
+  public requestConfig$ = this._seasonsStore.requestConfig$;
   public dataSets = DataSets;
   public categories = CATEGORIES;
 
-  public getSeasonData(): void {
-    this._seasonsStore.getSeasonData(this.getDataConfig$);
+  public getSeasonData(dataSet: DataSets): void {
+    this._seasonsStore.getData(dataSet);
   }
 }

@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
+import { DataSets } from 'src/app/enums/data-sets';
+import { SeasonsService } from 'src/app/services/seasons.service';
 
 @Component({
   selector: 'f1-pagination',
@@ -9,12 +11,15 @@ import { LetModule } from '@ngrx/component';
   imports: [CommonModule, LetModule],
   template: `
     <h2>Pagination!</h2>
-    <ul class="pages-list" *ngrxLet="limit$ as limit">
+    <ul
+      class="pages-list"
+      *ngrxLet="{ limit: limit$, dataSet: dataSet$ } as params"
+    >
       <li
         class="page"
         [ngClass]="{ highlighted: page === (currentPage$ | async) }"
         *ngFor="let page of pages$ | async"
-        (click)="updateCurrentPage(page, limit)"
+        (click)="updateCurrentPage(page, params.limit, params.dataSet)"
       >
         {{ page }}
       </li>
@@ -52,20 +57,25 @@ import { LetModule } from '@ngrx/component';
 })
 export class PaginationComponent {
   private _seasonsStore = inject(SeasonsStore);
+  private _seasonsService = inject(SeasonsService);
   public pages$ = this._seasonsStore.pages$;
   public currentPage$ = this._seasonsStore.currentPage$;
-  public getDataConfig$ = this._seasonsStore.getDataConfig$;
+  public requestConfig$ = this._seasonsStore.requestConfig$;
   public limit$ = this._seasonsStore.limit$;
+  public dataSet$ = this._seasonsService.dataSet$;
 
-  public updateCurrentPage(currentPage: number, limit: number) {
+  public updateCurrentPage(
+    currentPage: number,
+    limit: number,
+    dataSet: DataSets
+  ) {
     this._seasonsStore.patchState({ currentPage });
-    this._getData(limit);
+    this._getData(limit, dataSet);
   }
 
-  private _getData(limit: number): void {
-    console.log(limit);
+  private _getData(limit: number, dataSet: DataSets): void {
     if (limit < 1) return;
-    this._seasonsStore.getSeasonData(this.getDataConfig$);
+    this._seasonsStore.getData(dataSet);
   }
 }
 

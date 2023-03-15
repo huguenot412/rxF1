@@ -1,9 +1,11 @@
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
 import {
   exhaustMap,
   Observable,
+  share,
+  shareReplay,
   startWith,
   switchMap,
   tap,
@@ -62,6 +64,11 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly seasons$ = this.select(({ seasons }) => seasons).pipe(
     tap((data) => console.log(data))
   );
+  public readonly routeParams$ = this.select(
+    this.year$,
+    this.dataSet$,
+    (year, dataSet) => ({ year, dataSet })
+  ).pipe(tap(() => this.patchState({ currentPage: 1 })));
   public readonly years$ = this.select(({ years }) => years);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
@@ -196,7 +203,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return offset;
     }
-  ).pipe(startWith(0));
+  ).pipe(startWith(0), shareReplay());
   public readonly limit$ = this.select(
     this.offset$,
     this.currentPage$,
@@ -229,6 +236,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       return data!.slice(sliceStart, sliceEnd);
     }
   );
+  selectedQualifying$: any;
 
   constructor() {
     super(defaultState);

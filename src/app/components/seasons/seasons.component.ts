@@ -30,7 +30,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
   providers: [SeasonsService, SeasonsStore],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-container *ngrxLet="{year: year$, dataSet: dataSet$} as params">
+    <ng-container *ngrxLet="routeParams$ as params">
       <ul>
         <li *ngFor="let year of years$ | async">
           <a [routerLink]="['/seasons/' + year, params.dataSet || '']">{{ year }}</a>
@@ -61,10 +61,8 @@ import { PaginationComponent } from '../pagination/pagination.component';
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);
-  private _seasonsService = inject(SeasonsService);
-  public dataSet$ = this._seasonsService.dataSet$;
-  public year$ = this._seasonsService.year$;
   public years$ = this._seasonsStore.years$;
+  public routeParams$ = this._seasonsStore.routeParams$;
   public categories = CATEGORIES;
 
   public getSeasonData(dataSet: DataSets): void {

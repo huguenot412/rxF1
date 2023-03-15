@@ -13,13 +13,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h1>Drivers Data</h1>
-    <pre>{{ (dataSet | json) || 'Loading...' }}</pre>
-  `,
+  template: ` <h1>Drivers Data</h1> `,
   styles: [],
 })
-export class DriversComponent {
-  @Input()
-  public dataSet: any;
-}
+export class DriversComponent {}

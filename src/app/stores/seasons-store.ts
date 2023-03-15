@@ -60,14 +60,14 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly year$ = this._seasonsService.year$;
   public readonly dataSet$ = this._seasonsService.dataSet$;
   public readonly seasons$ = this.select(({ seasons }) => seasons).pipe(
-    tap((data) => console.log('seasons', data))
+    tap((data) => console.log(data))
   );
   public readonly years$ = this.select(({ years }) => years);
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this.year$,
     (seasons, year) => seasons.find((season) => season.year == year)
-  ).pipe(tap((data) => console.log('selected season', data)));
+  );
   public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
     this.dataSet$,
@@ -85,7 +85,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.totalResults$,
     this.resultsPerPage$,
     (total, resultsPerPage) => Math.ceil(total / resultsPerPage)
-  ).pipe(tap((data) => console.log('pages count', data)));
+  );
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
     [...Array(pageCount).keys()].map((num) => num + 1)
   );
@@ -130,7 +130,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return driverStandings;
     }
-  ).pipe(tap((data) => console.log('standings', data)));
+  );
   public readonly selectedData$ = this.select(
     this.dataSet$,
     this.selectedDrivers$,

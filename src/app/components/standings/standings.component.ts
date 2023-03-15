@@ -6,13 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h1>Standings Data</h1>
-    <pre>{{ (dataSet | async | json) || 'Loading...' }}</pre>
-  `,
+  template: ` <h1>Standings Data</h1> `,
   styles: [],
 })
-export class StandingsComponent {
-  @Input()
-  public dataSet: any;
-}
+export class StandingsComponent {}

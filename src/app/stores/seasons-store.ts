@@ -275,6 +275,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       }
 
       drivers.data = [...drivers.data, ...driverCategory.data];
+      drivers.total = driverCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {
@@ -307,16 +308,15 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       let results = newSeason[DataSets.Results];
 
       if (!results) {
-        results = data;
+        results = resultsCategory;
         newSeason = {
           ...newSeason,
           results,
         } as Season;
       }
 
-      let resultsData = results!.MRData.RaceTable!.Races;
-      const newDriversData = data.MRData.RaceTable!.Races;
-      resultsData = [...resultsData, ...newDriversData];
+      results.data = [...results.data, ...resultsCategory.data];
+      results.total = resultsCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {
@@ -327,7 +327,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateQualifying = this.updater(
-    (state: SeasonsState, data: SeasonCategory<Race<QualifyingResult>[]>) => {
+    (
+      state: SeasonsState,
+      qualifyingCategory: SeasonCategory<Race<QualifyingResult>[]>
+    ) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -336,7 +339,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       if (!newSeason) {
         const seasonWithQualifying = {
-          qualifying: data,
+          qualifying: qualifyingCategory,
           year,
         } as Season;
 
@@ -349,16 +352,15 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       let qualifying = newSeason[DataSets.Qualifying];
 
       if (!qualifying) {
-        qualifying = data;
+        qualifying = qualifyingCategory;
         newSeason = {
           ...newSeason,
           qualifying,
         } as Season;
       }
 
-      let qualifyingData = qualifying!.MRData.RaceTable!.Races;
-      const newQualifyingData = data.MRData.RaceTable!.Races;
-      qualifyingData = [...qualifyingData, ...newQualifyingData];
+      qualifying.data = [...qualifying.data, ...qualifyingCategory.data];
+      qualifying.total = qualifyingCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {
@@ -369,7 +371,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateStandings = this.updater(
-    (state: SeasonsState, data: SeasonCategory<StandingsList[]>) => {
+    (
+      state: SeasonsState,
+      standingsCategory: SeasonCategory<StandingsList[]>
+    ) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -378,7 +383,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       if (!newSeason) {
         const seasonWithStandings = {
-          driverStandings: data,
+          driverStandings: standingsCategory,
           year,
         } as Season;
 
@@ -391,17 +396,18 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       let driverStandings = newSeason[DataSets.Standings];
 
       if (!driverStandings) {
-        driverStandings = data;
+        driverStandings = standingsCategory;
         newSeason = {
           ...newSeason,
-          driverStandings: data,
+          driverStandings: standingsCategory,
         } as Season;
       }
 
-      let standingsData =
-        driverStandings!.MRData.StandingsTable!.StandingsLists;
-      const newStandingsData = data.MRData.StandingsTable!.StandingsLists;
-      standingsData = [...standingsData, ...newStandingsData];
+      driverStandings.data = [
+        ...driverStandings.data,
+        ...standingsCategory.data,
+      ];
+      driverStandings.total = standingsCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {

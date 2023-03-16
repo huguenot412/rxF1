@@ -20,5 +20,5 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 })
 export class QualifyingComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public qualifyingResults$ = this._seasonsStore.selectedQualifyingResults$;
+  public qualifyingResults$ = this._seasonsStore.dataToDisplay$;
 }

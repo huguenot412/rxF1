@@ -20,5 +20,5 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 })
 export class StandingsComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public driverStandings$ = this._seasonsStore.selectedDrivers$;
+  public driverStandings$ = this._seasonsStore.dataToDisplay$;
 }

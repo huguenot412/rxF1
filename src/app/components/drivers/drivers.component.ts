@@ -22,5 +22,5 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 })
 export class DriversComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public drivers$ = this._seasonsStore.selectedDrivers$;
+  public drivers$ = this._seasonsStore.dataToDisplay$;
 }

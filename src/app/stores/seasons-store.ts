@@ -1,11 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
 import {
-  exhaustMap,
   map,
   Observable,
-  share,
   shareReplay,
   startWith,
   switchMap,
@@ -14,21 +12,11 @@ import {
 } from 'rxjs';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
-import { Years } from '../enums/years.enum';
-import { DriversResponse } from '../models/drivers-response';
-import { RequestConfig } from '../models/get-seasons-config';
-import {
-  QualifyingResponse,
-  QualifyingResult,
-} from '../models/qualifying-response';
-import { Result, ResultsResponse } from '../models/results-response';
+import { QualifyingResult } from '../models/qualifying-response';
+import { Result } from '../models/results-response';
 import { Season, SeasonCategory } from '../models/season';
 import { Driver, Race } from '../models/seasons-response';
-import {
-  DriverStanding,
-  StandingsList,
-  StandingsResponse,
-} from '../models/standings-response';
+import { DriverStanding, StandingsList } from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
 
 export interface SeasonsState {
@@ -84,7 +72,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
   public readonly totalResults$ = this.select(
     this.selectedCategory$,
-    (data) => Number(data?.MRData.total) || 0
+    (category) => category?.total || 0
   );
   public readonly currentPage$ = this.select(({ currentPage }) => currentPage);
   public readonly resultsPerPage$ = this.select(
@@ -100,13 +88,13 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,
-    (season) => season?.drivers?.MRData.DriverTable.Drivers || ([] as Driver[])
+    (season) => season?.drivers?.data || ([] as Driver[])
   );
   public readonly selectedQualifyingResults$ = this.select(
     this.selectedSeason$,
     (season) => {
       let qualifyingResults: QualifyingResult[] = [];
-      season?.qualifying?.MRData.RaceTable.Races.forEach(
+      season?.qualifying?.data.forEach(
         (race) =>
           (qualifyingResults = [
             ...qualifyingResults,
@@ -121,7 +109,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.selectedSeason$,
     (season) => {
       let results: Result[] = [];
-      season?.results?.MRData.RaceTable.Races.forEach(
+      season?.results?.data.forEach(
         (race) => (results = [...results, ...race.Results!])
       );
 
@@ -132,7 +120,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.selectedSeason$,
     (season) => {
       let driverStandings: DriverStanding[] = [];
-      season?.driverStandings?.MRData.StandingsTable.StandingsLists.forEach(
+      season?.driverStandings?.data.forEach(
         (standing) =>
           (driverStandings = [...driverStandings, ...standing.DriverStandings])
       );

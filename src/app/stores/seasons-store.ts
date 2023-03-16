@@ -3,6 +3,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { ComponentStore, tapResponse } from '@ngrx/component-store';
 import {
   exhaustMap,
+  map,
   Observable,
   share,
   shareReplay,
@@ -21,10 +22,11 @@ import {
   QualifyingResult,
 } from '../models/qualifying-response';
 import { Result, ResultsResponse } from '../models/results-response';
-import { Season } from '../models/season';
-import { Driver } from '../models/seasons-response';
+import { Season, SeasonCategory } from '../models/season';
+import { Driver, Race } from '../models/seasons-response';
 import {
   DriverStanding,
+  StandingsList,
   StandingsResponse,
 } from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
@@ -243,7 +245,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   }
 
   public readonly updateDrivers = this.updater(
-    (state: SeasonsState, data: DriversResponse) => {
+    (state: SeasonsState, data: SeasonCategory<Driver[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -285,7 +287,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateResults = this.updater(
-    (state: SeasonsState, data: ResultsResponse) => {
+    (state: SeasonsState, data: SeasonCategory<Race<Result>[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -327,7 +329,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateQualifying = this.updater(
-    (state: SeasonsState, data: QualifyingResponse) => {
+    (state: SeasonsState, data: SeasonCategory<Race<QualifyingResult>[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -369,7 +371,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateStandings = this.updater(
-    (state: SeasonsState, data: StandingsResponse) => {
+    (state: SeasonsState, data: SeasonCategory<StandingsList[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -433,6 +435,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       withLatestFrom(this.requestConfig$),
       switchMap(([, config]) =>
         this._seasonsService.getDrivers(config).pipe(
+          map((response) => ({
+            total: +response.MRData.total,
+            data: response.MRData.DriverTable.Drivers,
+          })),
           tapResponse(
             (data) => this.updateDrivers(data),
             (error) => console.log(error)
@@ -447,6 +453,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       withLatestFrom(this.requestConfig$),
       switchMap(([, config]) =>
         this._seasonsService.getResults(config).pipe(
+          map((response) => ({
+            total: +response.MRData.total,
+            data: response.MRData.RaceTable.Races,
+          })),
           tapResponse(
             (data) => this.updateResults(data),
             (error) => console.log(error)
@@ -461,6 +471,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       withLatestFrom(this.requestConfig$),
       switchMap(([, config]) =>
         this._seasonsService.getQualifying(config).pipe(
+          map((response) => ({
+            total: +response.MRData.total,
+            data: response.MRData.RaceTable.Races,
+          })),
           tapResponse(
             (data) => this.updateQualifying(data),
             (error) => console.log(error)
@@ -475,6 +489,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       withLatestFrom(this.requestConfig$),
       switchMap(([, config]) =>
         this._seasonsService.getStandings(config).pipe(
+          map((response) => ({
+            total: +response.MRData.total,
+            data: response.MRData.StandingsTable.StandingsLists,
+          })),
           tapResponse(
             (data) => this.updateStandings(data),
             (error) => console.log(error)

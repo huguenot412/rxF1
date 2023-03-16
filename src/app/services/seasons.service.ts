@@ -8,6 +8,8 @@ import { DriversResponse } from '../models/drivers-response';
 import { RequestConfig } from '../models/get-seasons-config';
 import { QualifyingResponse } from '../models/qualifying-response';
 import { ResultsResponse } from '../models/results-response';
+import { SeasonCategory } from '../models/season';
+import { Driver } from '../models/seasons-response';
 import { StandingsResponse } from '../models/standings-response';
 
 @Injectable({

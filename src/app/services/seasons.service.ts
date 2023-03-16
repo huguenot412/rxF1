@@ -1,15 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map, Observable, share, shareReplay } from 'rxjs';
+import { map, Observable, shareReplay } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { RouteParams } from '../enums/route-params';
 import { DriversResponse } from '../models/drivers-response';
 import { RequestConfig } from '../models/get-seasons-config';
 import { QualifyingResponse } from '../models/qualifying-response';
 import { ResultsResponse } from '../models/results-response';
-import { SeasonCategory } from '../models/season';
-import { Driver } from '../models/seasons-response';
 import { StandingsResponse } from '../models/standings-response';
 
 @Injectable({

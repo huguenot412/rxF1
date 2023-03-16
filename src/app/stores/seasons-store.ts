@@ -245,7 +245,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   }
 
   public readonly updateDrivers = this.updater(
-    (state: SeasonsState, data: SeasonCategory<Driver[]>) => {
+    (state: SeasonsState, driverCategory: SeasonCategory<Driver[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -253,8 +253,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       );
 
       if (!newSeason) {
-        const seasonWithDrivers = {
-          drivers: data,
+        const seasonWithDrivers: Season = {
+          drivers: driverCategory,
           year,
         } as Season;
 
@@ -267,16 +267,14 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       let drivers = newSeason[DataSets.Drivers];
 
       if (!drivers) {
-        drivers = data;
+        drivers = driverCategory;
         newSeason = {
           ...newSeason,
           drivers,
         } as Season;
       }
 
-      let driversData = drivers!.MRData.DriverTable!.Drivers;
-      const newDriversData = data.MRData.DriverTable!.Drivers;
-      driversData = [...driversData, ...newDriversData];
+      drivers.data = [...drivers.data, ...driverCategory.data];
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
       return {
@@ -287,7 +285,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   );
 
   public readonly updateResults = this.updater(
-    (state: SeasonsState, data: SeasonCategory<Race<Result>[]>) => {
+    (state: SeasonsState, resultsCategory: SeasonCategory<Race<Result>[]>) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       let { newSeasons, newSeason, newSeasonIndex } = this._cloneSeasons(
         state.seasons,
@@ -296,7 +294,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       if (!newSeason) {
         const seasonWithResults = {
-          results: data,
+          results: resultsCategory,
           year,
         } as Season;
 

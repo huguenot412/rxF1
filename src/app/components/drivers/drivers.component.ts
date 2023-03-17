@@ -15,7 +15,7 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>Drivers Data</h1>
+    <h1>Drivers</h1>
     <table>
       <th>Last Name</th>
       <th>First Name</th>

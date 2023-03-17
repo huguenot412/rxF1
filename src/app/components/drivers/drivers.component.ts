@@ -16,7 +16,16 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Drivers Data</h1>
-    <pre>{{ selectedDrivers$ | async | json }}</pre>
+    <table>
+      <th>Last Name</th>
+      <th>First Name</th>
+      <th>Nationality</th>
+      <tr *ngFor="let driver of selectedDrivers$ | async">
+        <td>{{ driver.familyName }}</td>
+        <td>{{ driver.givenName }}</td>
+        <td>{{ driver.nationality }}</td>
+      </tr>
+    </table>
   `,
   styles: [],
 })

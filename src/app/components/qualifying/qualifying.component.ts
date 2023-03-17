@@ -1,5 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Input,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SeasonsStore } from 'src/app/stores/seasons-store';
 
 @Component({
   selector: 'f1-qualifying',
@@ -8,11 +14,11 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Qualifying Results Data</h1>
-    <pre>{{ (dataSet | async | json) || 'Loading...' }}</pre>
+    <pre>{{ qualifyingResults$ | async | json }}</pre>
   `,
   styles: [],
 })
 export class QualifyingComponent {
-  @Input()
-  public dataSet: any;
+  private _seasonsStore = inject(SeasonsStore);
+  public qualifyingResults$ = this._seasonsStore.selectedQualifyingResults$;
 }

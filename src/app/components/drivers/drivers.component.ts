@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
+import { SeasonsStore } from 'src/app/stores/seasons-store';
 
 @Component({
   selector: 'f1-drivers',
@@ -15,11 +16,12 @@ import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Drivers Data</h1>
-    <pre>{{ (dataSet | json) || 'Loading...' }}</pre>
+    <pre>{{ selectedDrivers$ | async | json }}</pre>
   `,
   styles: [],
 })
 export class DriversComponent {
-  @Input()
-  public dataSet: any;
+  private _seasonsStore = inject(SeasonsStore);
+  public offset$ = this._seasonsStore.offset$;
+  public selectedDrivers$ = this._seasonsStore.selectedDrivers$;
 }

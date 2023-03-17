@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SeasonsStore } from 'src/app/stores/seasons-store';
 
 @Component({
   selector: 'f1-standings',
@@ -8,11 +9,11 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Standings Data</h1>
-    <pre>{{ (dataSet | async | json) || 'Loading...' }}</pre>
+    <pre>{{ driverStandings$ | async | json }}</pre>
   `,
   styles: [],
 })
 export class StandingsComponent {
-  @Input()
-  public dataSet: any;
+  private _seasonsStore = inject(SeasonsStore);
+  public driverStandings$ = this._seasonsStore.selectedDriverStandings$;
 }

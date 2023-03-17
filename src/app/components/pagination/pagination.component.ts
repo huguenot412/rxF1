@@ -4,22 +4,33 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
 import { DataSets } from 'src/app/enums/data-sets';
 import { SeasonsService } from 'src/app/services/seasons.service';
+import { RequestConfig } from 'src/app/models/get-seasons-config';
 
 @Component({
   selector: 'f1-pagination',
   standalone: true,
   imports: [CommonModule, LetModule],
   template: `
-    <h2>Pagination!</h2>
-    <ul
-      class="pages-list"
-      *ngrxLet="{ limit: limit$, dataSet: dataSet$ } as params"
-    >
+    <label for="resultsPerPage"
+      >Results per page:
+      <select
+        #results
+        type="select"
+        name="resultsPerPage"
+        id="resultsPerPage"
+        (change)="changeResultsPerPage(+results.value)"
+      >
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+      </select>
+    </label>
+    <ul class="pages-list" *ngrxLet="requestConfig$ as config">
       <li
         class="page"
         [ngClass]="{ highlighted: page === (currentPage$ | async) }"
         *ngFor="let page of pages$ | async"
-        (click)="updateCurrentPage(page, params.limit, params.dataSet)"
+        (click)="updateCurrentPage(page, config)"
       >
         {{ page }}
       </li>
@@ -61,27 +72,20 @@ export class PaginationComponent {
   public pages$ = this._seasonsStore.pages$;
   public currentPage$ = this._seasonsStore.currentPage$;
   public requestConfig$ = this._seasonsStore.requestConfig$;
-  public limit$ = this._seasonsStore.limit$;
+  public resultsPerPage$ = this._seasonsStore.resultsPerPage$;
   public dataSet$ = this._seasonsService.dataSet$;
 
-  public updateCurrentPage(
-    currentPage: number,
-    limit: number,
-    dataSet: DataSets
-  ) {
+  public updateCurrentPage(currentPage: number, config: RequestConfig) {
     this._seasonsStore.patchState({ currentPage });
-    this._getData(limit, dataSet);
+    this._getData(config);
   }
 
-  private _getData(limit: number, dataSet: DataSets): void {
-    if (limit < 1) return;
-    this._seasonsStore.getData(dataSet);
+  public changeResultsPerPage(val: number): void {
+    console.log('resultsPerPage', val);
+    this._seasonsStore.patchState({ resultsPerPage: val });
+  }
+
+  private _getData(config: RequestConfig): void {
+    this._seasonsStore.getData(config);
   }
 }
-
-// Check if data for view has already been fetched
-// if data.length < page * limit
-// Calculate number of missing results
-// Set the offset and limit
-// Fetch missing results
-// Patch missing results

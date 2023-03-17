@@ -33,7 +33,6 @@ import { LetModule } from '@ngrx/component';
 })
 export class SeasonDetailsComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public data$ = this._seasonsStore.dataToDisplay$;
   public dataSet$ = this._seasonsStore.dataSet$;
   public categories = CATEGORIES;
   public dataSets = DataSets;

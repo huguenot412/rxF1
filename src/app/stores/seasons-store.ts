@@ -12,6 +12,7 @@ import {
 } from 'rxjs';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
+import { RequestConfig } from '../models/get-seasons-config';
 import { QualifyingResult } from '../models/qualifying-response';
 import { Result } from '../models/results-response';
 import { Season, SeasonCategory } from '../models/season';
@@ -50,46 +51,54 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _route = inject(ActivatedRoute);
   public readonly year$ = this._seasonsService.year$;
-  public readonly dataSet$ = this._seasonsService.dataSet$;
-  public readonly seasons$ = this.select(({ seasons }) => seasons).pipe(
-    tap((data) => console.log(data))
-  );
-  public readonly routeParams$ = this.select(
-    this.year$,
-    this.dataSet$,
-    (year, dataSet) => ({ year, dataSet })
-  ).pipe(tap(() => this.patchState({ currentPage: 1 })));
+  public readonly dataSet$ = this._seasonsService.dataSet$.pipe(shareReplay());
+  public readonly seasons$ = this.select(({ seasons }) => seasons);
+
   public readonly years$ = this.select(({ years }) => years);
+
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this.year$,
     (seasons, year) => seasons.find((season) => season.year == year)
-  );
+  ).pipe(tap((data) => console.log('season', data)));
+
   public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
     this.dataSet$,
     (season, dataSet: DataSets) => (season ? season[dataSet] : null)
   );
+
   public readonly totalResults$ = this.select(
     this.selectedCategory$,
     (category) => category?.total || 0
   );
-  public readonly currentPage$ = this.select(({ currentPage }) => currentPage);
+
+  public readonly currentPage$ = this.select(
+    ({ currentPage }) => currentPage
+  ).pipe(startWith(1));
+
   public readonly resultsPerPage$ = this.select(
     ({ resultsPerPage }) => resultsPerPage
   );
+
   public readonly pagesCount$ = this.select(
     this.totalResults$,
     this.resultsPerPage$,
     (total, resultsPerPage) => Math.ceil(total / resultsPerPage)
   );
+
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
     [...Array(pageCount).keys()].map((num) => num + 1)
   );
+
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,
     (season) => season?.drivers?.data || ([] as Driver[])
+  ).pipe(
+    shareReplay(),
+    tap((data) => console.log('selectedDrivers', data))
   );
+
   public readonly selectedQualifyingResults$ = this.select(
     this.selectedSeason$,
     (season) => {
@@ -104,7 +113,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return qualifyingResults;
     }
-  );
+  ).pipe(shareReplay());
+
   public readonly selectedResults$ = this.select(
     this.selectedSeason$,
     (season) => {
@@ -115,7 +125,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return results;
     }
-  );
+  ).pipe(shareReplay());
+
   public readonly selectedDriverStandings$ = this.select(
     this.selectedSeason$,
     (season) => {
@@ -127,106 +138,34 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return driverStandings;
     }
-  );
-  public readonly selectedData$ = this.select(
-    this.dataSet$,
-    this.selectedDrivers$,
-    this.selectedQualifyingResults$,
-    this.selectedResults$,
-    this.selectedDriverStandings$,
-    (
-      dataSet,
-      selectedDrivers,
-      selectedQualifyingResults,
-      selectedResults,
-      selectedDriverStandings
-    ) => {
-      let data;
+  ).pipe(shareReplay());
 
-      switch (dataSet) {
-        case DataSets.Drivers:
-          data = selectedDrivers;
-          break;
-        case DataSets.Qualifying:
-          data = selectedQualifyingResults;
-          break;
-        case DataSets.Results:
-          data = selectedResults;
-          break;
-        case DataSets.Standings:
-          data = selectedDriverStandings;
-          break;
-      }
-
-      return data;
-    }
-  );
-  public readonly offset$ = this.select(
-    this.dataSet$,
-    this.selectedDrivers$,
-    this.selectedQualifyingResults$,
-    this.selectedResults$,
-    this.selectedDriverStandings$,
-    (
-      dataSet,
-      selectedDrivers,
-      selectedQualifyingResults,
-      selectedResults,
-      selectedDriverStandings
-    ) => {
-      let offset = 0;
-
-      switch (dataSet) {
-        case DataSets.Drivers:
-          offset = selectedDrivers!.length;
-          break;
-        case DataSets.Qualifying:
-          offset = selectedQualifyingResults.length;
-          break;
-        case DataSets.Results:
-          offset = selectedResults.length;
-          break;
-        case DataSets.Standings:
-          offset = selectedDriverStandings.length;
-          break;
-      }
-
-      return offset;
-    }
-  ).pipe(startWith(0), shareReplay());
-  public readonly limit$ = this.select(
-    this.offset$,
-    this.currentPage$,
+  public offset$ = this.select(
     this.resultsPerPage$,
-    (offset, page, resultsPerPage) => {
-      const pageMax = page * resultsPerPage;
-      let limit = pageMax - offset;
+    this.currentPage$,
+    (resultsPerPage, currentPage) =>
+      resultsPerPage * currentPage - resultsPerPage
+  );
 
-      if (limit < 0) limit = 0;
-
-      return limit;
-    }
-  ).pipe(startWith(10));
   public readonly requestConfig$ = this.select(
     this.year$,
     this.dataSet$,
-    this.limit$,
+    this.resultsPerPage$,
     this.offset$,
     (year, dataSet, limit, offset) => ({ year, dataSet, limit, offset })
   );
-  public readonly dataToDisplay$ = this.select(
-    this.selectedData$,
-    this.currentPage$,
-    this.resultsPerPage$,
-    (data, currentPage, resultsPerPage) => {
-      const range = currentPage * resultsPerPage;
-      const sliceStart = range - resultsPerPage;
-      const sliceEnd = sliceStart + resultsPerPage;
 
-      return data!.slice(sliceStart, sliceEnd);
-    }
+  public readonly routeParams$ = this.select(
+    this.year$,
+    this.dataSet$,
+    (year, dataSet) => ({ year, dataSet })
+  ).pipe(
+    withLatestFrom(this.requestConfig$),
+    tap(([, config]) => {
+      this.patchState({ currentPage: 1 });
+      this.getData(config);
+    })
   );
-  selectedQualifying$: any;
 
   constructor() {
     super(defaultState);
@@ -241,15 +180,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       );
 
       if (!newSeason) {
-        const seasonWithDrivers: Season = {
+        newSeason = {
           drivers: driverCategory,
           year,
         } as Season;
-
-        return {
-          ...state,
-          seasons: [...state.seasons, seasonWithDrivers],
-        };
       }
 
       let drivers = newSeason[DataSets.Drivers];
@@ -262,7 +196,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         } as Season;
       }
 
-      drivers.data = [...drivers.data, ...driverCategory.data];
+      drivers.data = driverCategory.data;
       drivers.total = driverCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
@@ -282,15 +216,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       );
 
       if (!newSeason) {
-        const seasonWithResults = {
+        newSeason = {
           results: resultsCategory,
           year,
         } as Season;
-
-        return {
-          ...state,
-          seasons: [...state.seasons, seasonWithResults],
-        };
       }
 
       let results = newSeason[DataSets.Results];
@@ -303,7 +232,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         } as Season;
       }
 
-      results.data = [...results.data, ...resultsCategory.data];
+      results.data = resultsCategory.data;
       results.total = resultsCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
@@ -326,15 +255,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       );
 
       if (!newSeason) {
-        const seasonWithQualifying = {
+        newSeason = {
           qualifying: qualifyingCategory,
           year,
         } as Season;
-
-        return {
-          ...state,
-          seasons: [...state.seasons, seasonWithQualifying],
-        };
       }
 
       let qualifying = newSeason[DataSets.Qualifying];
@@ -347,7 +271,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         } as Season;
       }
 
-      qualifying.data = [...qualifying.data, ...qualifyingCategory.data];
+      qualifying.data = qualifyingCategory.data;
       qualifying.total = qualifyingCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
@@ -370,15 +294,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       );
 
       if (!newSeason) {
-        const seasonWithStandings = {
+        newSeason = {
           driverStandings: standingsCategory,
           year,
         } as Season;
-
-        return {
-          ...state,
-          seasons: [...state.seasons, seasonWithStandings],
-        };
       }
 
       let driverStandings = newSeason[DataSets.Standings];
@@ -391,10 +310,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         } as Season;
       }
 
-      driverStandings.data = [
-        ...driverStandings.data,
-        ...standingsCategory.data,
-      ];
+      driverStandings.data = standingsCategory.data;
       driverStandings.total = standingsCategory.total;
       newSeasons.splice(newSeasonIndex, 1, newSeason);
 
@@ -405,8 +321,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     }
   );
 
-  readonly getData = (dataSet: DataSets): void => {
-    switch (dataSet) {
+  readonly getData = (config: RequestConfig): void => {
+    switch (config.dataSet) {
       case DataSets.Drivers:
         this.getDrivers();
         break;
@@ -508,13 +424,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     };
   }
 }
-
-// Pagination
-
-// Display data
-
-// Tests
-
-// Styling
-
-// Route Guards
+function starWith(
+  arg0: number
+): import('rxjs').OperatorFunction<number, unknown> {
+  throw new Error('Function not implemented.');
+}

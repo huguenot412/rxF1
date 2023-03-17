@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 
@@ -20,5 +15,5 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 })
 export class ResultsComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public results$ = this._seasonsStore.dataToDisplay$;
+  public results$ = this._seasonsStore.selectedResults$;
 }

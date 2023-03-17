@@ -16,11 +16,12 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Drivers Data</h1>
-    <pre>{{ drivers$ | async | json }}</pre>
+    <pre>{{ selectedDrivers$ | async | json }}</pre>
   `,
   styles: [],
 })
 export class DriversComponent {
   private _seasonsStore = inject(SeasonsStore);
-  public drivers$ = this._seasonsStore.dataToDisplay$;
+  public offset$ = this._seasonsStore.offset$;
+  public selectedDrivers$ = this._seasonsStore.selectedDrivers$;
 }

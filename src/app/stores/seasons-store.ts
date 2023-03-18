@@ -94,28 +94,24 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,
     (season) => season?.drivers?.data || ([] as Driver[])
-  ).pipe(
-    shareReplay(),
-    tap((data) => console.log('selectedDrivers', data))
-  );
+  ).pipe(shareReplay());
 
   public readonly selectedQualifyingResults$ = this.select(
     this.selectedSeason$,
-    (season) => {
-      let qualifyingResults: QualifyingResult[] = [];
-      season?.qualifying?.data.forEach(
-        (race) =>
-          (qualifyingResults = [
-            ...qualifyingResults,
-            ...race.QualifyingResults!,
-          ])
-      );
-
-      return qualifyingResults;
-    }
+    (season) => season?.qualifying?.data || ([] as Race<QualifyingResult>[])
   ).pipe(shareReplay());
 
   public readonly selectedResults$ = this.select(
+    this.selectedSeason$,
+    (season) => season?.results?.data
+  ).pipe(shareReplay());
+
+  public readonly selectedDriverStandings$ = this.select(
+    this.selectedSeason$,
+    (season) => season?.driverStandings?.data
+  ).pipe(shareReplay());
+
+  public readonly aggregatedResults$ = this.select(
     this.selectedSeason$,
     (season) => {
       let results: Result[] = [];
@@ -125,33 +121,20 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
       return results;
     }
-  ).pipe(shareReplay());
-
-  public readonly selectedDriverStandings$ = this.select(
-    this.selectedSeason$,
-    (season) => {
-      let driverStandings: DriverStanding[] = [];
-      season?.driverStandings?.data.forEach(
-        (standing) =>
-          (driverStandings = [...driverStandings, ...standing.DriverStandings])
-      );
-
-      return driverStandings;
-    }
-  ).pipe(shareReplay());
+  );
 
   public readonly totalFinished$ = this.select(
-    this.selectedResults$,
+    this.aggregatedResults$,
     (results) => results.filter((result) => result.status === 'Finished').length
   );
 
   public readonly totalAccident$ = this.select(
-    this.selectedResults$,
+    this.aggregatedResults$,
     (results) => results.filter((result) => result.status === 'Accident').length
   );
 
   public readonly totalPlus1$ = this.select(
-    this.selectedResults$,
+    this.aggregatedResults$,
     (results) => results.filter((result) => result.status === '+1 Lap').length
   );
 

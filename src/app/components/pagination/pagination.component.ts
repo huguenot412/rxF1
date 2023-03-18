@@ -44,6 +44,8 @@ import { RequestConfig } from 'src/app/models/get-seasons-config';
         display: flex;
         flex-wrap: wrap;
         gap: 0.2rem;
+        margin: 1rem 0;
+        padding: 0;
       }
 
       .page {

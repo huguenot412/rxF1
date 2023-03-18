@@ -9,23 +9,26 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Standings Data</h1>
-    <table>
-      <th>Position</th>
-      <th>Driver</th>
-      <th>Nationality</th>
-      <th>Points</th>
-      <th>Wins</th>
+    <div *ngFor="let list of driverStandings$ | async">
+      <h3>Round: {{ list.round }}</h3>
+      <table>
+        <th>Position</th>
+        <th>Driver</th>
+        <th>Nationality</th>
+        <th>Points</th>
+        <th>Wins</th>
 
-      <tr *ngFor="let standing of driverStandings$ | async">
-        <td>{{ standing.position }}</td>
-        <td>
-          {{ standing.Driver.familyName + ', ' + standing.Driver.givenName }}
-        </td>
-        <td>{{ standing.Driver.nationality }}</td>
-        <td>{{ standing.points }}</td>
-        <td>{{ standing.wins }}</td>
-      </tr>
-    </table>
+        <tr *ngFor="let standing of list.DriverStandings">
+          <td>{{ standing.position }}</td>
+          <td>
+            {{ standing.Driver.familyName + ', ' + standing.Driver.givenName }}
+          </td>
+          <td>{{ standing.Driver.nationality }}</td>
+          <td>{{ standing.points }}</td>
+          <td>{{ standing.wins }}</td>
+        </tr>
+      </table>
+    </div>
   `,
   styles: [],
 })

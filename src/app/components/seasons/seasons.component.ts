@@ -51,8 +51,8 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <ng-template #seasonsEmptyState>
         <p>Choose a season</p>
       </ng-template>
+      <f1-pagination/>
       <ng-container [ngSwitch]="vm.config.dataSet">
-        <f1-pagination/>
         <f1-drivers *ngSwitchCase="dataSets.Drivers"/>
         <f1-results *ngSwitchCase="dataSets.Results"/>
         <f1-qualifying *ngSwitchCase="dataSets.Qualifying"/>

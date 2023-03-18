@@ -45,7 +45,7 @@ import { MatListModule } from '@angular/material/list';
           <mat-nav-list>
             <a mat-list-item *ngFor="let year of years$ | async" [activated]="year === vm.config.year" [routerLink]="['/seasons/' + year, vm.config.dataSet || '']">{{ year }}</a>
           </mat-nav-list>
-          <ng-container *ngIf="vm.config.year; else seasonsEmptyState">
+          <ng-container *ngIf="vm.config.year">
             <mat-divider></mat-divider>
             <div mat-subheader>Categories</div>
             <mat-nav-list>
@@ -61,17 +61,14 @@ import { MatListModule } from '@angular/material/list';
           </ng-container>
         </mat-drawer>
       <mat-drawer-content class="drawer-content">
-        <ng-template #seasonsEmptyState>
-          <p>Choose a season</p>
-        </ng-template>
-        <h1>{{ vm.config.year + " " + categories.get(vm.config.dataSet) || ''}}</h1>
+        <h1>{{ vm.config.year + " " + (categories.get(vm.config.dataSet) || '')}}</h1>
         <f1-pagination/>
         <ng-container [ngSwitch]="vm.config.dataSet">
           <f1-drivers *ngSwitchCase="dataSets.Drivers"/>
           <f1-results *ngSwitchCase="dataSets.Results"/>
           <f1-qualifying *ngSwitchCase="dataSets.Qualifying"/>
           <f1-standings *ngSwitchCase="dataSets.Standings"/>
-          <p *ngSwitchDefault>No data available</p>
+          <p *ngSwitchDefault>Choose a category</p>
         </ng-container>
       </mat-drawer-content>
       </mat-drawer-container>

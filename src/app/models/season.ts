@@ -1,12 +1,7 @@
-import { DriversResponse } from './drivers-response';
-import { QualifyingResponse, QualifyingResult } from './qualifying-response';
-import { Result, ResultsResponse } from './results-response';
+import { QualifyingResult } from './qualifying-response';
+import { Result } from './results-response';
 import { Driver, Race } from './seasons-response';
-import {
-  DriverStanding,
-  StandingsList,
-  StandingsResponse,
-} from './standings-response';
+import { StandingsList } from './standings-response';
 
 export interface SeasonCategory<T> {
   total: number;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
 import { SeasonsService } from 'src/app/services/seasons.service';
-import { RequestConfig } from 'src/app/models/get-seasons-config';
+import { RequestConfig } from 'src/app/models/request-config';
 import { MatSelectModule } from '@angular/material/select';
 
 @Component({

@@ -12,12 +12,12 @@ import {
 } from 'rxjs';
 import { DataSets } from '../enums/data-sets';
 import { RouteParams } from '../enums/route-params';
-import { RequestConfig } from '../models/get-seasons-config';
+import { RequestConfig } from '../models/request-config';
 import { QualifyingResult } from '../models/qualifying-response';
 import { Result } from '../models/results-response';
 import { Season, SeasonCategory } from '../models/season';
 import { Driver, Race } from '../models/seasons-response';
-import { DriverStanding, StandingsList } from '../models/standings-response';
+import { StandingsList } from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
 
 export interface SeasonsState {
@@ -53,7 +53,6 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly year$ = this._seasonsService.year$;
   public readonly dataSet$ = this._seasonsService.dataSet$.pipe(shareReplay());
   public readonly seasons$ = this.select(({ seasons }) => seasons);
-
   public readonly years$ = this.select(({ years }) => years);
 
   public readonly selectedSeason$ = this.select(
@@ -94,22 +93,22 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,
     (season) => season?.drivers?.data || ([] as Driver[])
-  ).pipe(shareReplay());
+  );
 
   public readonly selectedQualifyingResults$ = this.select(
     this.selectedSeason$,
     (season) => season?.qualifying?.data || ([] as Race<QualifyingResult>[])
-  ).pipe(shareReplay());
+  );
 
   public readonly selectedResults$ = this.select(
     this.selectedSeason$,
     (season) => season?.results?.data
-  ).pipe(shareReplay());
+  );
 
   public readonly selectedDriverStandings$ = this.select(
     this.selectedSeason$,
     (season) => season?.driverStandings?.data
-  ).pipe(shareReplay());
+  );
 
   public readonly aggregatedResults$ = this.select(
     this.selectedSeason$,
@@ -421,9 +420,4 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       newSeasonIndex,
     };
   }
-}
-function starWith(
-  arg0: number
-): import('rxjs').OperatorFunction<number, unknown> {
-  throw new Error('Function not implemented.');
 }

@@ -31,13 +31,13 @@ import { PaginationComponent } from '../pagination/pagination.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-container *ngrxLet="{config: requestConfig$, params: routeParams$} as vm">
+
       <ul>
         <li *ngFor="let year of years$ | async">
           <a [routerLink]="['/seasons/' + year, vm.config.dataSet || '']">{{ year }}</a>
         </li>
       </ul>
       <ng-container *ngIf="vm.config.year; else seasonsEmptyState">
-        <h1>{{ vm.config.year }}</h1>
         <ul>
           <li *ngFor="let category of categories | keyvalue">
             <a
@@ -51,6 +51,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
       <ng-template #seasonsEmptyState>
         <p>Choose a season</p>
       </ng-template>
+      <h1>{{ vm.config.year + " " + categories.get(vm.config.dataSet)}}</h1>
       <f1-pagination/>
       <ng-container [ngSwitch]="vm.config.dataSet">
         <f1-drivers *ngSwitchCase="dataSets.Drivers"/>

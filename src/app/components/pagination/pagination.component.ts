@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
-import { DataSets } from 'src/app/enums/data-sets';
 import { SeasonsService } from 'src/app/services/seasons.service';
 import { RequestConfig } from 'src/app/models/get-seasons-config';
 
@@ -11,30 +10,32 @@ import { RequestConfig } from 'src/app/models/get-seasons-config';
   standalone: true,
   imports: [CommonModule, LetModule],
   template: `
-    <label for="resultsPerPage"
-      >Results per page:
-      <select
-        #results
-        type="select"
-        name="resultsPerPage"
-        id="resultsPerPage"
-        (change)="changeResultsPerPage(+results.value)"
-      >
-        <option value="10">10</option>
-        <option value="15">15</option>
-        <option value="25">25</option>
-      </select>
-    </label>
-    <ul class="pages-list" *ngrxLet="requestConfig$ as config">
-      <li
-        class="page"
-        [ngClass]="{ highlighted: page === (currentPage$ | async) }"
-        *ngFor="let page of pages$ | async"
-        (click)="updateCurrentPage(page, config)"
-      >
-        {{ page }}
-      </li>
-    </ul>
+    <ng-container *ngrxLet="requestConfig$ as config">
+      <label for="resultsPerPage"
+        >Results per page:
+        <select
+          #results
+          type="select"
+          name="resultsPerPage"
+          id="resultsPerPage"
+          (change)="changeResultsPerPage(+results.value, config)"
+        >
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="25">25</option>
+        </select>
+      </label>
+      <ul class="pages-list">
+        <li
+          class="page"
+          [ngClass]="{ highlighted: page === (currentPage$ | async) }"
+          *ngFor="let page of pages$ | async"
+          (click)="updateCurrentPage(page, config)"
+        >
+          {{ page }}
+        </li>
+      </ul>
+    </ng-container>
   `,
   styles: [
     `
@@ -80,9 +81,9 @@ export class PaginationComponent {
     this._getData(config);
   }
 
-  public changeResultsPerPage(val: number): void {
-    console.log('resultsPerPage', val);
-    this._seasonsStore.patchState({ resultsPerPage: val });
+  public changeResultsPerPage(val: number, config: RequestConfig): void {
+    this._seasonsStore.patchState({ resultsPerPage: val, currentPage: 1 });
+    this._seasonsStore.getData(config);
   }
 
   private _getData(config: RequestConfig): void {

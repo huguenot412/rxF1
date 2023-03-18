@@ -60,7 +60,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.seasons$,
     this.year$,
     (seasons, year) => seasons.find((season) => season.year == year)
-  ).pipe(tap((data) => console.log('season', data)));
+  );
 
   public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
@@ -139,6 +139,21 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       return driverStandings;
     }
   ).pipe(shareReplay());
+
+  public readonly totalFinished$ = this.select(
+    this.selectedResults$,
+    (results) => results.filter((result) => result.status === 'Finished').length
+  );
+
+  public readonly totalAccident$ = this.select(
+    this.selectedResults$,
+    (results) => results.filter((result) => result.status === 'Accident').length
+  );
+
+  public readonly totalPlus1$ = this.select(
+    this.selectedResults$,
+    (results) => results.filter((result) => result.status === '+1 Lap').length
+  );
 
   public offset$ = this.select(
     this.resultsPerPage$,

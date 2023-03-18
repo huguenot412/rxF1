@@ -4,27 +4,32 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
 import { SeasonsService } from 'src/app/services/seasons.service';
 import { RequestConfig } from 'src/app/models/get-seasons-config';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'f1-pagination',
   standalone: true,
-  imports: [CommonModule, LetModule],
+  imports: [CommonModule, LetModule, MatSelectModule],
   template: `
     <ng-container *ngrxLet="requestConfig$ as config">
-      <label for="resultsPerPage"
-        >Results per page:
-        <select
+      <mat-form-field appearance="fill">
+        <mat-label>Results per page</mat-label>
+        <mat-select
           #results
-          type="select"
-          name="resultsPerPage"
-          id="resultsPerPage"
-          (change)="changeResultsPerPage(+results.value, config)"
+          (selectionChange)="changeResultsPerPage(+results.value, config)"
         >
-          <option value="10">10</option>
-          <option value="15">15</option>
-          <option value="25">25</option>
-        </select>
-      </label>
+          <mat-option value="10">
+            {{ 10 }}
+          </mat-option>
+          <mat-option value="15">
+            {{ 15 }}
+          </mat-option>
+          <mat-option value="25">
+            {{ 25 }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <h3>Pages:</h3>
       <ul class="pages-list">
         <li
           class="page"
@@ -55,6 +60,7 @@ import { RequestConfig } from 'src/app/models/get-seasons-config';
         height: 2rem;
         width: 2rem;
         border: 1px solid #333;
+        border-radius: 3px;
 
         &:hover {
           cursor: pointer;

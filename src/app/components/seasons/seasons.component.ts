@@ -12,6 +12,12 @@ import { SeasonDetailsComponent } from '../season-details/season-details.compone
 import { CATEGORIES } from 'src/app/consts/categories';
 import { LetModule } from '@ngrx/component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { MatButtonModule } from '@angular/material/button';
+import {
+  MatDrawerContainer,
+  MatSidenavModule,
+} from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-seasons',
@@ -26,43 +32,67 @@ import { PaginationComponent } from '../pagination/pagination.component';
     SeasonDetailsComponent,
     PaginationComponent,
     LetModule,
+    MatSidenavModule,
+    MatListModule,
   ],
-  providers: [SeasonsService, SeasonsStore],
+  providers: [SeasonsService, SeasonsStore, MatDrawerContainer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-container *ngrxLet="{config: requestConfig$, params: routeParams$} as vm">
+      <mat-drawer-container class="drawer-container">
+        <mat-drawer mode="side" opened>
+          <div mat-subheader>Seasons</div>
+          <mat-nav-list>
+            <a mat-list-item *ngFor="let year of years$ | async" [activated]="year === vm.config.year" [routerLink]="['/seasons/' + year, vm.config.dataSet || '']">{{ year }}</a>
+          </mat-nav-list>
+          <ng-container *ngIf="vm.config.year; else seasonsEmptyState">
+            <mat-divider></mat-divider>
+            <div mat-subheader>Categories</div>
+            <mat-nav-list>
+              <a
+                *ngFor="let category of categories | keyvalue" [activated]="category === vm.config.dataSet"
+                mat-list-item
+                  [routerLink]="['/seasons', vm.config.year, category.key]"
+                  (click)="changeCategory()">
+                  {{ category.value }}
+              </a>
 
-      <ul>
-        <li *ngFor="let year of years$ | async">
-          <a [routerLink]="['/seasons/' + year, vm.config.dataSet || '']">{{ year }}</a>
-        </li>
-      </ul>
-      <ng-container *ngIf="vm.config.year; else seasonsEmptyState">
-        <ul>
-          <li *ngFor="let category of categories | keyvalue">
-            <a
-              [routerLink]="['/seasons', vm.config.year, category.key]"
-              (click)="changeCategory()">
-              {{ category.value }}
-            </a>
-          </li>
-        </ul>
-      </ng-container>
-      <ng-template #seasonsEmptyState>
-        <p>Choose a season</p>
-      </ng-template>
-      <h1>{{ vm.config.year + " " + categories.get(vm.config.dataSet)}}</h1>
-      <f1-pagination/>
-      <ng-container [ngSwitch]="vm.config.dataSet">
-        <f1-drivers *ngSwitchCase="dataSets.Drivers"/>
-        <f1-results *ngSwitchCase="dataSets.Results"/>
-        <f1-qualifying *ngSwitchCase="dataSets.Qualifying"/>
-        <f1-standings *ngSwitchCase="dataSets.Standings"/>
-        <p *ngSwitchDefault>No data available</p>
-      </ng-container>
+            </mat-nav-list>
+          </ng-container>
+        </mat-drawer>
+      <mat-drawer-content class="drawer-content">
+        <ng-template #seasonsEmptyState>
+          <p>Choose a season</p>
+        </ng-template>
+        <h1>{{ vm.config.year + " " + categories.get(vm.config.dataSet) || ''}}</h1>
+        <f1-pagination/>
+        <ng-container [ngSwitch]="vm.config.dataSet">
+          <f1-drivers *ngSwitchCase="dataSets.Drivers"/>
+          <f1-results *ngSwitchCase="dataSets.Results"/>
+          <f1-qualifying *ngSwitchCase="dataSets.Qualifying"/>
+          <f1-standings *ngSwitchCase="dataSets.Standings"/>
+          <p *ngSwitchDefault>No data available</p>
+        </ng-container>
+      </mat-drawer-content>
+      </mat-drawer-container>
     </ng-container>
   `,
-  styles: [``],
+  styles: [
+    `
+      .drawer-container {
+        min-height: 100vh;
+        width: 100vw;
+      }
+
+      .drawer-content {
+        padding: 1rem;
+      }
+
+      [mat-subheader] {
+        font-weight: 600;
+      }
+    `,
+  ],
 })
 export class SeasonsComponent {
   private _seasonsStore = inject(SeasonsStore);

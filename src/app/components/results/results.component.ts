@@ -8,8 +8,7 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>Race Results</h1>
-    <h2>Totals (from currently displayed results)</h2>
+    <h3>Totals (from currently displayed results):</h3>
     <p>Finished: {{ totalFinished$ | async }}</p>
     <p>Accidents: {{ totalAccident$ | async }}</p>
     <p>+1 Lap: {{ totalPlus1$ | async }}</p>

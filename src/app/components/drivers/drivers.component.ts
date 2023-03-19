@@ -2,11 +2,14 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
+import { MatTableModule } from '@angular/material/table';
+import { CdkColumnDef } from '@angular/cdk/table';
 
 @Component({
   selector: 'f1-drivers',
   standalone: true,
-  imports: [CommonModule, LetModule],
+  imports: [CommonModule, LetModule, MatTableModule],
+  providers: [CdkColumnDef],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-container
@@ -15,15 +18,22 @@ import { LetModule } from '@ngrx/component';
         currentPage: currentPage$
       } as vm"
     >
-      <table>
-        <th>Last Name</th>
-        <th>First Name</th>
-        <th>Nationality</th>
-        <tr *ngFor="let driver of vm.driversPageMap.get(vm.currentPage)">
-          <td>{{ driver.familyName }}</td>
-          <td>{{ driver.givenName }}</td>
-          <td>{{ driver.nationality }}</td>
-        </tr>
+      <table mat-table [dataSource]="vm.driversPageMap.get(vm.currentPage)!">
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef>Last Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.familyName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef>First Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.givenName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="nationality">
+          <th mat-header-cell *matHeaderCellDef>Nationality</th>
+          <td mat-cell *matCellDef="let element">{{ element.nationality }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
       <ng-container> </ng-container
     ></ng-container>
@@ -36,4 +46,5 @@ export class DriversComponent {
   public selectedDrivers$ = this._seasonsStore.selectedDrivers$;
   public driversPagesMap$ = this._seasonsStore.driversPagesMap$;
   public currentPage$ = this._seasonsStore.currentPage$;
+  public displayedColumns: string[] = ['lastName', 'firstName', 'nationality'];
 }

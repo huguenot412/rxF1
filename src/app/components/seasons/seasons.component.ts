@@ -56,14 +56,14 @@ import { MatListModule } from '@angular/material/list';
                   (click)="changeCategory()">
                   {{ category.value }}
               </a>
-
             </mat-nav-list>
           </ng-container>
         </mat-drawer>
       <mat-drawer-content class="drawer-content">
-        <h1>{{ vm.config.year + " " + (categories.get(vm.config.dataSet) || '')}}</h1>
-        <f1-pagination/>
-        <ng-container [ngSwitch]="vm.config.dataSet">
+        <h1>{{ (vm.config.year || '') + " " + (categories.get(vm.config.dataSet) || '')}}</h1>
+        <p *ngIf="!vm.config.year">Choose a season</p>
+        <f1-pagination *ngIf="vm.config.year && vm.config.dataSet"/>
+        <ng-container [ngSwitch]="vm.config.dataSet" *ngIf="vm.config.year">
           <f1-drivers *ngSwitchCase="dataSets.Drivers"/>
           <f1-results *ngSwitchCase="dataSets.Results"/>
           <f1-qualifying *ngSwitchCase="dataSets.Qualifying"/>

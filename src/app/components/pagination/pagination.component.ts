@@ -16,6 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
         <mat-label>Results per page</mat-label>
         <mat-select
           #results
+          value="10"
           (selectionChange)="changeResultsPerPage(+results.value, config)"
         >
           <mat-option value="10">

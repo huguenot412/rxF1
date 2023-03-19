@@ -318,7 +318,19 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     }
   );
 
-  readonly getData = (config: RequestConfig): void => {
+  public readonly resetPagesMaps = this.updater((state: SeasonsState) => {
+    return create(state, (draft) => {
+      console.log(draft);
+      draft.seasons.forEach((season) => {
+        season.driversPagesMap.clear();
+        season.resultsPagesMap.clear();
+        season.qualifyingPagesMap.clear();
+        season.standingsPagesMap.clear();
+      });
+    });
+  });
+
+  public readonly getData = (config: RequestConfig): void => {
     switch (config.dataSet) {
       case DataSets.Drivers:
         this.getDrivers();
@@ -341,26 +353,41 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         this.requestConfig$,
         this.driversPagesMap$,
         this.currentPage$,
-        this.resultsPerPage$
+        this.resultsPerPage$,
+        this.selectedCategory$
       ),
-      switchMap(([, config, driversPageMap, currentPage, resultsPerPage]) => {
-        if (driversPageMap.get(currentPage)?.length === resultsPerPage)
-          return EMPTY;
-
-        return this._seasonsService.getDrivers(config).pipe(
-          map((response) => ({
-            total: +response.MRData.total,
-            data: response.MRData.DriverTable.Drivers,
-          })),
-          tapResponse(
-            (data) => {
-              this.updateDrivers(data);
-              this.updateDriversPagesMap(data.data);
-            },
-            (error) => console.log(error)
+      switchMap(
+        ([
+          ,
+          config,
+          driversPageMap,
+          currentPage,
+          resultsPerPage,
+          selectedCategory,
+        ]) => {
+          const pageCount = driversPageMap.get(currentPage)?.length || 0;
+          const totalCount = (currentPage - 1) * resultsPerPage + pageCount;
+          if (
+            pageCount === resultsPerPage ||
+            (pageCount !== 0 && totalCount >= selectedCategory!.total)
           )
-        );
-      })
+            return EMPTY;
+
+          return this._seasonsService.getDrivers(config).pipe(
+            map((response) => ({
+              total: +response.MRData.total,
+              data: response.MRData.DriverTable.Drivers,
+            })),
+            tapResponse(
+              (data) => {
+                this.updateDrivers(data);
+                this.updateDriversPagesMap(data.data);
+              },
+              (error) => console.log(error)
+            )
+          );
+        }
+      )
     );
   });
 

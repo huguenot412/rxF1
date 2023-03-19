@@ -5,7 +5,7 @@ import { map, Observable, shareReplay } from 'rxjs';
 import { ERGAST_API_BASE, RESPONSE_FORMAT, SERIES } from '../consts/ergast-api';
 import { RouteParams } from '../enums/route-params';
 import { DriversResponse } from '../models/drivers-response';
-import { RequestConfig } from '../models/get-seasons-config';
+import { RequestConfig } from '../models/request-config';
 import { QualifyingResponse } from '../models/qualifying-response';
 import { ResultsResponse } from '../models/results-response';
 import { StandingsResponse } from '../models/standings-response';
@@ -57,31 +57,3 @@ export class SeasonsService {
     );
   }
 }
-
-// List of Drivers per season.
-// http://ergast.com/api/f1/{{year}}/drivers
-
-// List of Races per season with final results.
-// http://ergast.com/api/f1/{{year}}/{{round}}/results
-
-// Qualifying Results per race in every single season.
-// http://ergast.com/api/f1/{{year}}/{{round}}/qualifying
-
-// Driver Standings after a race.
-// http://ergast.com/api/f1/{{year}}/{{round}}/driverStandings
-
-// BONUS:
-//     How many cars "Finished".
-//     How many cars had an "Accident".
-//     How many cars finished +1 Lap.
-
-// BONUS:
-//     How many cars "Finished".
-//     How many cars had an "Accident".
-//     How many cars finished +1 Lap.
-
-// Add number to items to show in pagination:
-
-//     10
-//     15
-//     25

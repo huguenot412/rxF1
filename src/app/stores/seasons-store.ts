@@ -360,13 +360,14 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
         ([
           ,
           config,
-          driversPageMap,
+          driversPagesMap,
           currentPage,
           resultsPerPage,
           selectedCategory,
         ]) => {
-          const pageCount = driversPageMap.get(currentPage)?.length || 0;
+          const pageCount = driversPagesMap.get(currentPage)?.length || 0;
           const totalCount = (currentPage - 1) * resultsPerPage + pageCount;
+
           if (
             pageCount === resultsPerPage ||
             (pageCount !== 0 && totalCount >= selectedCategory!.total)
@@ -393,21 +394,53 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
   readonly getResults = this.effect((request$: Observable<void>) => {
     return request$.pipe(
-      withLatestFrom(this.requestConfig$),
-      switchMap(([, config]) =>
-        this._seasonsService.getResults(config).pipe(
-          map((response) => ({
-            total: +response.MRData.total,
-            data: response.MRData.RaceTable.Races,
-          })),
-          tapResponse(
-            (data) => {
-              this.updateResults(data);
-              this.updateResultsPagesMap(data.data);
-            },
-            (error) => console.log(error)
+      withLatestFrom(
+        this.requestConfig$,
+        this.resultsPagesMap$,
+        this.currentPage$,
+        this.resultsPerPage$,
+        this.selectedCategory$
+      ),
+      switchMap(
+        ([
+          ,
+          config,
+          resultsPagesMap,
+          currentPage,
+          resultsPerPage,
+          selectedCategory,
+        ]) => {
+          const pageCount =
+            resultsPagesMap
+              .get(currentPage)
+              ?.reduce((accumulator, currentValue) => {
+                return (accumulator = [
+                  ...accumulator,
+                  ...currentValue.Results!,
+                ]);
+              }, [] as Result[]).length || 0;
+          const totalCount = (currentPage - 1) * resultsPerPage + pageCount;
+
+          if (
+            pageCount === resultsPerPage ||
+            (pageCount !== 0 && totalCount >= selectedCategory!.total)
           )
-        )
+            return EMPTY;
+
+          return this._seasonsService.getResults(config).pipe(
+            map((response) => ({
+              total: +response.MRData.total,
+              data: response.MRData.RaceTable.Races,
+            })),
+            tapResponse(
+              (data) => {
+                this.updateResults(data);
+                this.updateResultsPagesMap(data.data);
+              },
+              (error) => console.log(error)
+            )
+          );
+        }
       )
     );
   });

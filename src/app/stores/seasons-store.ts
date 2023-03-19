@@ -18,7 +18,7 @@ import { QualifyingResult } from '../models/qualifying-response';
 import { Result } from '../models/results-response';
 import { Season, SeasonCategory } from '../models/season';
 import { Driver, Race } from '../models/seasons-response';
-import { StandingsList } from '../models/standings-response';
+import { DriverStanding, StandingsList } from '../models/standings-response';
 import { SeasonsService } from '../services/seasons.service';
 import { create } from 'mutative';
 import { createNewSeason } from '../utils/create-new-season';
@@ -498,19 +498,72 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     );
   });
 
-  // readonly getQualifying = this.effect((request$: Observable<void>) => {
+  readonly getStandings = this.effect((request$: Observable<void>) => {
+    return request$.pipe(
+      withLatestFrom(
+        this.requestConfig$,
+        this.standingsPagesMap$,
+        this.currentPage$,
+        this.resultsPerPage$,
+        this.selectedCategory$
+      ),
+      switchMap(
+        ([
+          ,
+          config,
+          standingsPagesMap,
+          currentPage,
+          resultsPerPage,
+          selectedCategory,
+        ]) => {
+          const pageCount =
+            standingsPagesMap
+              .get(currentPage)
+              ?.reduce((accumulator, currentValue) => {
+                return (accumulator = [
+                  ...accumulator,
+                  ...currentValue.DriverStandings!,
+                ]);
+              }, [] as DriverStanding[]).length || 0;
+          const totalCount = (currentPage - 1) * resultsPerPage + pageCount;
+
+          if (
+            pageCount === resultsPerPage ||
+            (pageCount !== 0 && totalCount >= selectedCategory!.total)
+          )
+            return EMPTY;
+
+          return this._seasonsService.getStandings(config).pipe(
+            map((response) => ({
+              total: +response.MRData.total,
+              data: response.MRData.StandingsTable.StandingsLists,
+            })),
+            tapResponse(
+              (data) => {
+                this.updateStandings(data);
+                this.updateStandingsPagesMap(data.data);
+              },
+              (error) => console.log(error)
+            )
+          );
+        }
+      )
+    );
+  });
+
+  // readonly getStandings = this.effect((request$: Observable<void>) => {
   //   return request$.pipe(
   //     withLatestFrom(this.requestConfig$),
   //     switchMap(([, config]) =>
-  //       this._seasonsService.getQualifying(config).pipe(
+  //       this._seasonsService.getStandings(config).pipe(
   //         map((response) => ({
   //           total: +response.MRData.total,
-  //           data: response.MRData.RaceTable.Races,
+  //           data: response.MRData.StandingsTable.StandingsLists,
   //         })),
   //         tapResponse(
   //           (data) => {
-  //             this.updateQualifying(data);
-  //             this.updateQualifyingPagesMap(data.data);
+  //             this.updateStandings(data);
+  //             this.updateStandingsPagesMap(data.data);
   //           },
   //           (error) => console.log(error)
   //         )
@@ -518,25 +571,4 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   //     )
   //   );
   // });
-
-  readonly getStandings = this.effect((request$: Observable<void>) => {
-    return request$.pipe(
-      withLatestFrom(this.requestConfig$),
-      switchMap(([, config]) =>
-        this._seasonsService.getStandings(config).pipe(
-          map((response) => ({
-            total: +response.MRData.total,
-            data: response.MRData.StandingsTable.StandingsLists,
-          })),
-          tapResponse(
-            (data) => {
-              this.updateStandings(data);
-              this.updateStandingsPagesMap(data.data);
-            },
-            (error) => console.log(error)
-          )
-        )
-      )
-    );
-  });
 }

@@ -9,9 +9,13 @@ export interface SeasonCategory<T> {
 }
 
 export interface Season {
-  drivers?: SeasonCategory<Driver[]>;
-  results?: SeasonCategory<Race<Result>[]>;
-  qualifying?: SeasonCategory<Race<QualifyingResult>[]>;
-  driverStandings?: SeasonCategory<StandingsList[]>;
+  drivers: SeasonCategory<Driver[]>;
+  results: SeasonCategory<Race<Result>[]>;
+  qualifying: SeasonCategory<Race<QualifyingResult>[]>;
+  driverStandings: SeasonCategory<StandingsList[]>;
+  driversPagesMap: Map<number, Driver[]>;
+  resultsPagesMap: Map<number, Race<Result>[]>;
+  qualifyingPagesMap: Map<number, Race<QualifyingResult>[]>;
+  standingsPagesMap: Map<number, StandingsList[]>;
   year: string;
 }

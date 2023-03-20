@@ -32,6 +32,7 @@ export interface SeasonsState {
   resultsPagesMap: Map<number, Race<Result>[]>;
   qualifyingPagesMap: Map<number, Race<QualifyingResult>[]>;
   standingsPagesMap: Map<number, StandingsList[]>;
+  loadingData: boolean;
 }
 
 export interface SeasonUpdaterConfig {
@@ -55,13 +56,8 @@ const defaultState: SeasonsState = {
   resultsPagesMap: new Map() as Map<number, Race<Result>[]>,
   qualifyingPagesMap: new Map() as Map<number, Race<QualifyingResult>[]>,
   standingsPagesMap: new Map() as Map<number, StandingsList[]>,
+  loadingData: false,
 };
-
-interface SeasonsClone {
-  newSeasons: Season[];
-  newSeason: Season | undefined;
-  newSeasonIndex: number;
-}
 
 @Injectable()
 export class SeasonsStore extends ComponentStore<SeasonsState> {
@@ -96,6 +92,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly resultsPerPage$ = this.select(
     ({ resultsPerPage }) => resultsPerPage
   );
+
+  public readonly loadingData$ = this.select(({ loadingData }) => loadingData);
 
   public readonly pagesCount$ = this.select(
     this.totalResults$,
@@ -374,6 +372,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
           )
             return EMPTY;
 
+          this.patchState({ loadingData: true });
+
           return this._seasonsService.getDrivers(config).pipe(
             map((response) => ({
               total: +response.MRData.total,
@@ -383,8 +383,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
               (data) => {
                 this.updateDrivers(data);
                 this.updateDriversPagesMap(data.data);
+                this.patchState({ loadingData: false });
               },
-              (error) => console.log(error)
+              (error) => {
+                console.log(error);
+                this.patchState({ loadingData: false });
+              }
             )
           );
         }
@@ -427,6 +431,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
           )
             return EMPTY;
 
+          this.patchState({ loadingData: true });
+
           return this._seasonsService.getResults(config).pipe(
             map((response) => ({
               total: +response.MRData.total,
@@ -436,8 +442,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
               (data) => {
                 this.updateResults(data);
                 this.updateResultsPagesMap(data.data);
+                this.patchState({ loadingData: false });
               },
-              (error) => console.log(error)
+              (error) => {
+                console.log(error);
+                this.patchState({ loadingData: false });
+              }
             )
           );
         }
@@ -480,6 +490,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
           )
             return EMPTY;
 
+          this.patchState({ loadingData: true });
+
           return this._seasonsService.getQualifying(config).pipe(
             map((response) => ({
               total: +response.MRData.total,
@@ -489,8 +501,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
               (data) => {
                 this.updateQualifying(data);
                 this.updateQualifyingPagesMap(data.data);
+                this.patchState({ loadingData: false });
               },
-              (error) => console.log(error)
+              (error) => {
+                console.log(error);
+                this.patchState({ loadingData: false });
+              }
             )
           );
         }
@@ -533,6 +549,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
           )
             return EMPTY;
 
+          this.patchState({ loadingData: true });
+
           return this._seasonsService.getStandings(config).pipe(
             map((response) => ({
               total: +response.MRData.total,
@@ -542,33 +560,16 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
               (data) => {
                 this.updateStandings(data);
                 this.updateStandingsPagesMap(data.data);
+                this.patchState({ loadingData: false });
               },
-              (error) => console.log(error)
+              (error) => {
+                console.log(error);
+                this.patchState({ loadingData: false });
+              }
             )
           );
         }
       )
     );
   });
-
-  // readonly getStandings = this.effect((request$: Observable<void>) => {
-  //   return request$.pipe(
-  //     withLatestFrom(this.requestConfig$),
-  //     switchMap(([, config]) =>
-  //       this._seasonsService.getStandings(config).pipe(
-  //         map((response) => ({
-  //           total: +response.MRData.total,
-  //           data: response.MRData.StandingsTable.StandingsLists,
-  //         })),
-  //         tapResponse(
-  //           (data) => {
-  //             this.updateStandings(data);
-  //             this.updateStandingsPagesMap(data.data);
-  //           },
-  //           (error) => console.log(error)
-  //         )
-  //       )
-  //     )
-  //   );
-  // });
 }

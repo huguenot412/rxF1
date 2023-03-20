@@ -4,11 +4,12 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkColumnDef } from '@angular/cdk/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'f1-drivers',
   standalone: true,
-  imports: [CommonModule, LetModule, MatTableModule],
+  imports: [CommonModule, LetModule, MatTableModule, MatProgressSpinnerModule],
   providers: [CdkColumnDef],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -35,10 +36,21 @@ import { CdkColumnDef } from '@angular/cdk/table';
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
-      <ng-container> </ng-container
-    ></ng-container>
+      <div class="loading-spinner-wrapper" *ngIf="loadingData$ | async">
+        <mat-spinner color="accent"/>
+      </div>
   `,
-  styles: [],
+  styles: [
+    `
+      .loading-spinner-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 2rem;
+      }
+    `,
+  ],
 })
 export class DriversComponent {
   private _seasonsStore = inject(SeasonsStore);
@@ -46,5 +58,6 @@ export class DriversComponent {
   public selectedDrivers$ = this._seasonsStore.selectedDrivers$;
   public driversPagesMap$ = this._seasonsStore.driversPagesMap$;
   public currentPage$ = this._seasonsStore.currentPage$;
+  public loadingData$ = this._seasonsStore.loadingData$;
   public displayedColumns: string[] = ['lastName', 'firstName', 'nationality'];
 }

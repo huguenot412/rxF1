@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { CdkColumnDef } from '@angular/cdk/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'f1-results',
@@ -16,6 +17,7 @@ import { FormsModule } from '@angular/forms';
     MatTableModule,
     MatChipsModule,
     FormsModule,
+    MatProgressSpinnerModule,
   ],
   providers: [CdkColumnDef],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -102,6 +104,9 @@ import { FormsModule } from '@angular/forms';
         </table>
       </div>
     </ng-container>
+    <div class="loading-spinner-wrapper" *ngIf="loadingData$ | async">
+      <mat-spinner color="accent"/>
+    </div>
   `,
   styles: [
     `
@@ -118,6 +123,14 @@ import { FormsModule } from '@angular/forms';
         background-color: #42b883;
         color: #fff;
       }
+
+      .loading-spinner-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 2rem;
+      }
     `,
   ],
 })
@@ -129,6 +142,7 @@ export class ResultsComponent {
   public totalFinished$ = this._seasonsStore.totalFinished$;
   public totalAccident$ = this._seasonsStore.totalAccident$;
   public totalPlus1$ = this._seasonsStore.totalPlus1$;
+  public loadingData$ = this._seasonsStore.loadingData$;
   public stats: string = '';
   public displayedColumns: string[] = [
     'position',

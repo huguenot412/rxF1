@@ -4,11 +4,12 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 import { LetModule } from '@ngrx/component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkColumnDef } from '@angular/cdk/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'f1-standings',
   standalone: true,
-  imports: [CommonModule, LetModule, MatTableModule],
+  imports: [CommonModule, LetModule, MatTableModule, MatProgressSpinnerModule],
   providers: [CdkColumnDef],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -54,12 +55,23 @@ import { CdkColumnDef } from '@angular/cdk/table';
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
       </div>
+      <div class="loading-spinner-wrapper" *ngIf="loadingData$ | async">
+        <mat-spinner color="accent"/>
+      </div>
     </ng-container>
   `,
   styles: [
     `
       .results {
         margin-bottom: 2rem;
+      }
+
+      .loading-spinner-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 2rem;
       }
     `,
   ],
@@ -68,6 +80,7 @@ export class StandingsComponent {
   private _seasonsStore = inject(SeasonsStore);
   public driverStandings$ = this._seasonsStore.standingsPagesMap$;
   public currentPage$ = this._seasonsStore.currentPage$;
+  public loadingData$ = this._seasonsStore.loadingData$;
   public displayedColumns: string[] = [
     'position',
     'driver',

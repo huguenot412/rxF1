@@ -4,14 +4,9 @@ import { SubscriberSpy, subscribeSpyTo } from '@hirez_io/observer-spy';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SeasonsComponent } from '../components/seasons/seasons.component';
 import { RouteParams } from '../enums/route-params';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { SeasonCategory } from '../models/season';
+import { ActivatedRoute, Params } from '@angular/router';
 import { Driver } from '../models/seasons-response';
-import {
-  HttpClientTestingModule,
-  HttpTestingController,
-} from '@angular/common/http/testing';
-import { HttpClient } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { createNewSeason } from '../utils/create-new-season';
 import { DataSets } from '../enums/data-sets';
 import { SeasonsService } from '../services/seasons.service';

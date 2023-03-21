@@ -5,7 +5,6 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { DataSets } from 'src/app/enums/data-sets';
-import { RequestConfig } from 'src/app/models/request-config';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
 
 import { PaginationComponent } from './pagination.component';

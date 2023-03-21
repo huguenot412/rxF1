@@ -50,7 +50,7 @@ import { MatListModule } from '@angular/material/list';
             <div mat-subheader>Categories</div>
             <mat-nav-list>
               <a
-                *ngFor="let category of categories | keyvalue" [activated]="category === vm.config.dataSet"
+                *ngFor="let category of categories | keyvalue"
                 mat-list-item
                   [routerLink]="['/seasons', vm.config.year, category.key]"
                   (click)="changeCategory()">

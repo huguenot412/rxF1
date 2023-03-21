@@ -1,31 +1,27 @@
-import { QualifyingResult } from '../models/qualifying-response';
-import { Result } from '../models/results-response';
 import { Season } from '../models/season';
-import { Driver, Race } from '../models/seasons-response';
-import { StandingsList } from '../models/standings-response';
 
-export const createNewSeason = (year: string): Season => {
+export const createNewSeason = (season: Partial<Season>): Season => {
   return {
-    drivers: {
+    drivers: season.drivers || {
       total: 0,
       data: [],
     },
-    results: {
+    results: season.results || {
       total: 0,
       data: [],
     },
-    qualifying: {
+    qualifying: season.qualifying || {
       total: 0,
       data: [],
     },
-    driverStandings: {
+    driverStandings: season.driverStandings || {
       total: 0,
       data: [],
     },
-    driversPagesMap: new Map(),
-    resultsPagesMap: new Map(),
-    qualifyingPagesMap: new Map(),
-    standingsPagesMap: new Map(),
-    year: year,
+    driversPagesMap: season.driversPagesMap || new Map([]),
+    resultsPagesMap: season.resultsPagesMap || new Map([]),
+    qualifyingPagesMap: season.qualifyingPagesMap || new Map([]),
+    standingsPagesMap: season.standingsPagesMap || new Map([]),
+    year: season.year || '2018',
   };
 };

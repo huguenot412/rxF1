@@ -8,11 +8,9 @@ import { ResultsComponent } from '../results/results.component';
 import { QualifyingComponent } from '../qualifying/qualifying.component';
 import { StandingsComponent } from '../standings/standings.component';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
-import { SeasonDetailsComponent } from '../season-details/season-details.component';
 import { CATEGORIES } from 'src/app/consts/categories';
 import { LetModule } from '@ngrx/component';
 import { PaginationComponent } from '../pagination/pagination.component';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MatDrawerContainer,
   MatSidenavModule,
@@ -29,7 +27,6 @@ import { MatListModule } from '@angular/material/list';
     ResultsComponent,
     QualifyingComponent,
     StandingsComponent,
-    SeasonDetailsComponent,
     PaginationComponent,
     LetModule,
     MatSidenavModule,
@@ -50,7 +47,7 @@ import { MatListModule } from '@angular/material/list';
             <div mat-subheader>Categories</div>
             <mat-nav-list>
               <a
-                *ngFor="let category of categories | keyvalue" [activated]="category === vm.config.dataSet"
+                *ngFor="let category of categories | keyvalue"
                 mat-list-item
                   [routerLink]="['/seasons', vm.config.year, category.key]"
                   (click)="changeCategory()">

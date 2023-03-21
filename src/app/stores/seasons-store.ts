@@ -25,13 +25,9 @@ import { createNewSeason } from '../utils/create-new-season';
 
 export interface SeasonsState {
   years: string[];
-  seasons: Season[];
+  seasonsMap: Map<string, Season>;
   currentPage: number;
   resultsPerPage: number;
-  driversPagesMap: Map<number, Driver[]>;
-  resultsPagesMap: Map<number, Race<Result>[]>;
-  qualifyingPagesMap: Map<number, Race<QualifyingResult>[]>;
-  standingsPagesMap: Map<number, StandingsList[]>;
   loadingData: boolean;
 }
 
@@ -41,21 +37,15 @@ export interface SeasonUpdaterConfig {
   data: any;
 }
 
+const years = ['2018', '2019', '2020', '2021', '2022'];
+const seasonsMap = new Map(
+  years.map((year) => [year, createNewSeason({ year })])
+);
 const defaultState: SeasonsState = {
-  years: ['2018', '2019', '2020', '2021', '2022'],
-  seasons: [
-    createNewSeason('2018'),
-    createNewSeason('2019'),
-    createNewSeason('2020'),
-    createNewSeason('2021'),
-    createNewSeason('2022'),
-  ],
+  years,
+  seasonsMap,
   currentPage: 1,
   resultsPerPage: 10,
-  driversPagesMap: new Map() as Map<number, Driver[]>,
-  resultsPagesMap: new Map() as Map<number, Race<Result>[]>,
-  qualifyingPagesMap: new Map() as Map<number, Race<QualifyingResult>[]>,
-  standingsPagesMap: new Map() as Map<number, StandingsList[]>,
   loadingData: false,
 };
 
@@ -63,26 +53,40 @@ const defaultState: SeasonsState = {
 export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _route = inject(ActivatedRoute);
-  public readonly year$ = this._seasonsService.year$;
-  public readonly dataSet$ = this._seasonsService.dataSet$.pipe(shareReplay());
-  public readonly seasons$ = this.select(({ seasons }) => seasons);
+  public year$ = this._route.params.pipe(
+    map((params) => params[RouteParams.Year]),
+    shareReplay()
+  );
+  public dataSet$: Observable<DataSets> = this._route.params.pipe(
+    map((params) => params[RouteParams.DataSet]),
+    shareReplay()
+  );
+  public readonly seasons$ = this.select(({ seasonsMap }) => seasonsMap);
   public readonly years$ = this.select(({ years }) => years);
 
   public readonly selectedSeason$ = this.select(
     this.seasons$,
     this.year$,
-    (seasons, year) => seasons.find((season) => season.year == year)
-  );
+    (seasons, year) => seasons.get(year)
+  ).pipe(shareReplay());
 
   public readonly selectedCategory$ = this.select(
     this.selectedSeason$,
     this.dataSet$,
     (season, dataSet: DataSets) => (season ? season[dataSet] : null)
-  );
+  ).pipe(shareReplay());
 
   public readonly totalResults$ = this.select(
-    this.selectedCategory$,
-    (category) => category?.total || 0
+    this.seasons$,
+    this.year$,
+    this.dataSet$,
+    (seasons, year, dataSet) => {
+      const season = seasons.get(year);
+
+      if (season) return season[dataSet].total;
+
+      return 0;
+    }
   );
 
   public readonly currentPage$ = this.select(
@@ -98,7 +102,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly pagesCount$ = this.select(
     this.totalResults$,
     this.resultsPerPage$,
-    (total, resultsPerPage) => Math.ceil(total / resultsPerPage)
+    (total, resultsPerPage) => Math.ceil(total / resultsPerPage) || 0
   );
 
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
@@ -127,19 +131,26 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
   public readonly driversPagesMap$ = this.select(
     this.selectedSeason$,
-    (selectedSeason) => selectedSeason!.driversPagesMap
+    (selectedSeason) =>
+      selectedSeason?.driversPagesMap || (new Map() as Map<number, Driver[]>)
   );
   public readonly resultsPagesMap$ = this.select(
     this.selectedSeason$,
-    (selectedSeason) => selectedSeason!.resultsPagesMap
+    (selectedSeason) =>
+      selectedSeason?.resultsPagesMap ||
+      (new Map() as Map<number, Race<Result>[]>)
   );
   public readonly qualifyingPagesMap$ = this.select(
     this.selectedSeason$,
-    (selectedSeason) => selectedSeason!.qualifyingPagesMap
+    (selectedSeason) =>
+      selectedSeason?.qualifyingPagesMap ||
+      (new Map() as Map<number, Race<QualifyingResult>[]>)
   );
   public readonly standingsPagesMap$ = this.select(
     this.selectedSeason$,
-    (selectedSeason) => selectedSeason!.standingsPagesMap
+    (selectedSeason) =>
+      selectedSeason?.standingsPagesMap ||
+      (new Map() as Map<number, StandingsList[]>)
   );
 
   public readonly aggregatedResults$ = this.select(
@@ -205,12 +216,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        const season = draft.seasons.find((season) => season.year === year);
+        const season = draft.seasonsMap.get(year);
 
         if (season) {
           season.drivers = driverCategory;
         } else {
-          draft.seasons = [...draft.seasons, createNewSeason(year)];
+          draft.seasonsMap.set(year, createNewSeason({ year }));
         }
       });
     }
@@ -221,12 +232,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year: string = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        const season = draft.seasons.find((season) => season.year === year);
+        const season = draft.seasonsMap.get(year);
 
         if (season) {
           season.results = resultsCategory;
         } else {
-          draft.seasons = [...draft.seasons, createNewSeason(year)];
+          draft.seasonsMap.set(year, createNewSeason({ year }));
         }
       });
     }
@@ -239,12 +250,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     ) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       return create(state, (draft) => {
-        const season = draft.seasons.find((season) => season.year === year);
+        const season = draft.seasonsMap.get(year);
 
         if (season) {
           season.qualifying = qualifyingCategory;
         } else {
-          draft.seasons = [...draft.seasons, createNewSeason(year)];
+          draft.seasonsMap.set(year, createNewSeason({ year }));
         }
       });
     }
@@ -257,12 +268,12 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     ) => {
       const year: string = this._route.snapshot.params[RouteParams.Year];
       return create(state, (draft) => {
-        const season = draft.seasons.find((season) => season.year === year);
+        const season = draft.seasonsMap.get(year);
 
         if (season) {
           season.driverStandings = standingsCategory;
         } else {
-          draft.seasons = [...draft.seasons, createNewSeason(year)];
+          draft.seasonsMap.set(year, createNewSeason({ year }));
         }
       });
     }
@@ -273,8 +284,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        draft.seasons
-          .find((season) => season.year === year)
+        draft.seasonsMap
+          .get(year)
           ?.driversPagesMap.set(state.currentPage, drivers);
       });
     }
@@ -285,8 +296,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        draft.seasons
-          .find((season) => season.year === year)
+        draft.seasonsMap
+          .get(year)
           ?.resultsPagesMap.set(state.currentPage, results);
       });
     }
@@ -297,8 +308,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        draft.seasons
-          .find((season) => season.year === year)
+        draft.seasonsMap
+          .get(year)
           ?.qualifyingPagesMap.set(state.currentPage, qualifying);
       });
     }
@@ -309,8 +320,8 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
       const year = this._route.snapshot.params[RouteParams.Year];
 
       return create(state, (draft) => {
-        draft.seasons
-          .find((season) => season.year === year)
+        draft.seasonsMap
+          .get(year)
           ?.standingsPagesMap.set(state.currentPage, standings);
       });
     }
@@ -319,7 +330,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   public readonly resetPagesMaps = this.updater((state: SeasonsState) => {
     return create(state, (draft) => {
       console.log(draft);
-      draft.seasons.forEach((season) => {
+      draft.seasonsMap.forEach((season) => {
         season.driversPagesMap.clear();
         season.resultsPagesMap.clear();
         season.qualifyingPagesMap.clear();
@@ -363,7 +374,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
           resultsPerPage,
           selectedCategory,
         ]) => {
-          const pageCount = driversPagesMap.get(currentPage)?.length || 0;
+          const pageCount = driversPagesMap?.get(currentPage)?.length || 0;
           const totalCount = (currentPage - 1) * resultsPerPage + pageCount;
 
           if (

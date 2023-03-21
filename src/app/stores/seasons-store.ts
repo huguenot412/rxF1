@@ -54,12 +54,10 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _route = inject(ActivatedRoute);
   public year$ = this._route.params.pipe(
-    map((params) => params[RouteParams.Year]),
-    shareReplay()
+    map((params) => params[RouteParams.Year])
   );
   public dataSet$: Observable<DataSets> = this._route.params.pipe(
-    map((params) => params[RouteParams.DataSet]),
-    shareReplay()
+    map((params) => params[RouteParams.DataSet])
   );
   public readonly seasons$ = this.select(({ seasonsMap }) => seasonsMap);
   public readonly years$ = this.select(({ years }) => years);
@@ -83,11 +81,15 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     (seasons, year, dataSet) => {
       const season = seasons.get(year);
 
+      console.log('seasons', seasons);
+      console.log('year', year);
+      console.log('dataSet', dataSet);
+
       if (season) return season[dataSet].total;
 
       return 0;
     }
-  );
+  ).pipe(startWith(0));
 
   public readonly currentPage$ = this.select(
     ({ currentPage }) => currentPage
@@ -95,7 +97,7 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
 
   public readonly resultsPerPage$ = this.select(
     ({ resultsPerPage }) => resultsPerPage
-  );
+  ).pipe(startWith(10));
 
   public readonly loadingData$ = this.select(({ loadingData }) => loadingData);
 
@@ -103,11 +105,11 @@ export class SeasonsStore extends ComponentStore<SeasonsState> {
     this.totalResults$,
     this.resultsPerPage$,
     (total, resultsPerPage) => Math.ceil(total / resultsPerPage) || 0
-  );
+  ).pipe(tap((data) => console.log('pagesCount', data)));
 
   public readonly pages$ = this.select(this.pagesCount$, (pageCount) =>
     [...Array(pageCount).keys()].map((num) => num + 1)
-  );
+  ).pipe(tap((data) => console.log('pages', data)));
 
   public readonly selectedDrivers$ = this.select(
     this.selectedSeason$,

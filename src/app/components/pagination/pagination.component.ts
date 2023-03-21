@@ -90,8 +90,11 @@ export class PaginationComponent {
     this._seasonsStore.getData(config);
   }
 
-  public changeResultsPerPage(val: number, config: RequestConfig): void {
-    this._seasonsStore.patchState({ resultsPerPage: val, currentPage: 1 });
+  public changeResultsPerPage(
+    resultsPerPage: number,
+    config: RequestConfig
+  ): void {
+    this._seasonsStore.patchState({ resultsPerPage, currentPage: 1 });
     this._seasonsStore.resetPagesMaps();
     this._seasonsStore.getData(config);
   }

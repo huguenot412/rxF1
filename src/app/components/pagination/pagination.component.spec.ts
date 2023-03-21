@@ -10,7 +10,7 @@ import { SeasonsStore } from 'src/app/stores/seasons-store';
 
 import { PaginationComponent } from './pagination.component';
 
-xdescribe('PaginationComponent', () => {
+describe('PaginationComponent', () => {
   let component: PaginationComponent;
   let fixture: ComponentFixture<PaginationComponent>;
   let seasonsStore: SeasonsStore;
@@ -44,7 +44,7 @@ xdescribe('PaginationComponent', () => {
     fixture.detectChanges();
   });
 
-  fdescribe('updateCurrentPage', () => {
+  describe('updateCurrentPage', () => {
     it('should call patchState on the seasonsStore with the current page number', () => {
       spyOn(seasonsStore, 'patchState');
       component.updateCurrentPage(currentPage, requestConfig);
@@ -61,10 +61,28 @@ xdescribe('PaginationComponent', () => {
   });
 
   describe('changeResultsPerPage', () => {
-    it('should call patchState on the seasonsStore with the current page number and results per page', () => {});
+    it('should call patchState on the seasonsStore with the current page number and results per page', () => {
+      spyOn(seasonsStore, 'patchState');
+      component.changeResultsPerPage(resultsPerPage, requestConfig);
 
-    it('should call resetPagesMaps on the seasonsStore', () => {});
+      expect(seasonsStore.patchState).toHaveBeenCalledWith({
+        resultsPerPage,
+        currentPage: 1,
+      });
+    });
 
-    it('should call getData on the seasonsStore with the request config', () => {});
+    it('should call resetPagesMaps on the seasonsStore', () => {
+      spyOn(seasonsStore, 'resetPagesMaps');
+      component.changeResultsPerPage(resultsPerPage, requestConfig);
+
+      expect(seasonsStore.resetPagesMaps).toHaveBeenCalled();
+    });
+
+    it('should call getData on the seasonsStore with the request config', () => {
+      spyOn(seasonsStore, 'getData');
+      component.changeResultsPerPage(resultsPerPage, requestConfig);
+
+      expect(seasonsStore.getData).toHaveBeenCalledWith(requestConfig);
+    });
   });
 });

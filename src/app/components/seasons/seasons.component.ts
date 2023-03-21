@@ -8,11 +8,9 @@ import { ResultsComponent } from '../results/results.component';
 import { QualifyingComponent } from '../qualifying/qualifying.component';
 import { StandingsComponent } from '../standings/standings.component';
 import { SeasonsStore } from 'src/app/stores/seasons-store';
-import { SeasonDetailsComponent } from '../season-details/season-details.component';
 import { CATEGORIES } from 'src/app/consts/categories';
 import { LetModule } from '@ngrx/component';
 import { PaginationComponent } from '../pagination/pagination.component';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MatDrawerContainer,
   MatSidenavModule,
@@ -29,7 +27,6 @@ import { MatListModule } from '@angular/material/list';
     ResultsComponent,
     QualifyingComponent,
     StandingsComponent,
-    SeasonDetailsComponent,
     PaginationComponent,
     LetModule,
     MatSidenavModule,

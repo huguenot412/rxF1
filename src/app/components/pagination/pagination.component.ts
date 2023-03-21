@@ -85,18 +85,14 @@ export class PaginationComponent {
   public resultsPerPage$ = this._seasonsStore.resultsPerPage$;
   public dataSet$ = this._seasonsService.dataSet$;
 
-  public updateCurrentPage(currentPage: number, config: RequestConfig) {
+  public updateCurrentPage(currentPage: number, config: RequestConfig): void {
     this._seasonsStore.patchState({ currentPage });
-    this._getData(config);
+    this._seasonsStore.getData(config);
   }
 
   public changeResultsPerPage(val: number, config: RequestConfig): void {
     this._seasonsStore.patchState({ resultsPerPage: val, currentPage: 1 });
     this._seasonsStore.resetPagesMaps();
-    this._seasonsStore.getData(config);
-  }
-
-  private _getData(config: RequestConfig): void {
     this._seasonsStore.getData(config);
   }
 }

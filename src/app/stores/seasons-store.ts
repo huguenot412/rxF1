@@ -37,15 +37,13 @@ export interface SeasonUpdaterConfig {
   data: any;
 }
 
+const years = ['2018', '2019', '2020', '2021', '2022'];
+const seasonsMap = new Map(
+  years.map((year) => [year, createNewSeason({ year })])
+);
 const defaultState: SeasonsState = {
-  years: ['2018', '2019', '2020', '2021', '2022'],
-  seasonsMap: new Map([
-    ['2018', createNewSeason({ year: '2018' })],
-    ['2019', createNewSeason({ year: '2019' })],
-    ['2020', createNewSeason({ year: '2020' })],
-    ['2021', createNewSeason({ year: '2021' })],
-    ['2022', createNewSeason({ year: '2022' })],
-  ]),
+  years,
+  seasonsMap,
   currentPage: 1,
   resultsPerPage: 10,
   loadingData: false,
@@ -55,8 +53,6 @@ const defaultState: SeasonsState = {
 export class SeasonsStore extends ComponentStore<SeasonsState> {
   private readonly _seasonsService = inject(SeasonsService);
   private readonly _route = inject(ActivatedRoute);
-  // public readonly year$ = this._seasonsService.year$;
-  // public readonly dataSet$ = this._seasonsService.dataSet$.pipe(shareReplay());
   public year$ = this._route.params.pipe(
     map((params) => params[RouteParams.Year]),
     shareReplay()
